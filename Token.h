@@ -45,6 +45,8 @@ enum TokenType {
     GT,
     LT,
     SINGLE_QUOTED_STRING,
+    SINGLE_QUOTE,
+    DIVIDE,
     BOOLEAN_AND,
     L_BRACKET,
     R_BRACKET,

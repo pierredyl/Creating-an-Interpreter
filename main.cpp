@@ -9,12 +9,12 @@ using namespace std;
 
 
 int main() {
-    ifstream inputFile("C:/Users/dylan/CLionProjects/Creating-an-Interpreter/test_files/programming_assignment_2-test_file_1.c");
-    ofstream outputFile("C:/Users/dylan/CLionProjects/Creating-an-Interpreter/output.txt");
+    ifstream inputFile("/Users/dylanpierre/Desktop/Creating-an-Interpreter/test_files/programming_assignment_2-test_file_4.c");
+    ofstream outputFile("/Users/dylanpierre/Desktop/Creating-an-Interpreter/output.txt");
     remove_comments(inputFile, outputFile);
     inputFile.close();
 
-    inputFile.open("C:/Users/dylan/CLionProjects/Creating-an-Interpreter/output.txt");
+    inputFile.open("/Users/dylanpierre/Desktop/Creating-an-Interpreter/output.txt");
     stringstream buffer;
     buffer << inputFile.rdbuf();
     string code = buffer.str();
