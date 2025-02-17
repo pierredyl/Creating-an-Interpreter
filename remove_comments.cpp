@@ -63,6 +63,7 @@ void remove_comments(ifstream& inputFile, ofstream& outputFile) {
             case S3:
                 if (ch == '*') {
                     currentState = S4;
+                    lineBuffer[lineBuffer.size() - 1] = ' ';
                 } else {
                     lineBuffer[lineBuffer.size() - 1] = ' ';
                 }
