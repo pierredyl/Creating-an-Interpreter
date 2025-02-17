@@ -10,14 +10,24 @@
 
 using namespace std;
 
-enum State {S1, S2, S3, S4, S5, S6, S7, S8, S9, S10, S11, S12, S13};
+enum State {
+    S1, S2, S3, S4, S5, S6, S7, S8, S9, S10, S11, S12, S13, S14, S15, S16, S17, S18, S19, S20, S21, S22, S23,
+    S24, S25
+};
 
 const unordered_map<string, TokenType> Tokenizer::keywordMap = {
     {"int", KEYWORD_INT},
     {"main", KEYWORD_MAIN},
     {"procedure", KEYWORD_PROCEDURE},
     {"void", KEYWORD_VOID},
-    {"printf", KEYWORD_PRINTF}
+    {"printf", KEYWORD_PRINTF},
+    {"if", KEYWORD_IF},
+    {"else", KEYWORD_ELSE},
+    {"function", KEYWORD_FUNCTION},
+    {"return", KEYWORD_RETURN},
+    {"TRUE", KEYWORD_TRUE},
+    {"FALSE", KEYWORD_FALSE},
+    {"read", KEYWORD_READ}
 };
 
 
@@ -27,9 +37,9 @@ Tokenizer::Tokenizer(const string code) {
 }
 
 Token Tokenizer::getNextToken() {
+    State currentState = S1;
     Token token;
     size_t startPos;
-    State currentState = S1;
     bool isKeyword = false;
 
     while (pos < input.size()) {
@@ -43,10 +53,9 @@ Token Tokenizer::getNextToken() {
             token.setType(ERROR);
             return token;
         }
-
+        cout << currentState << endl;
         char currentChar = input[pos];
         switch(currentState) {
-
             case S1:
                 if (isalpha(currentChar)) {
                     startPos = pos;
@@ -69,6 +78,31 @@ Token Tokenizer::getNextToken() {
                     currentState = S11;
                 } else if (currentChar == ',') {
                     currentState = S13;
+                } else if (currentChar == '%') {
+                    currentState = S14;
+                } else if (currentChar == '*') {
+                    currentState = S15;
+                } else if (currentChar == '+') {
+                    currentState = S16;
+                } else if (isdigit(currentChar)) {
+                    startPos = pos;
+                    currentState = S17;
+                } else if (currentChar == '>' && input[pos+1] == '=') {
+                    currentState = S18;
+                } else if (currentChar == '<' && input[pos+1] == '=') {
+                    currentState = S19;
+                } else if (currentChar == '&') {
+                    currentState = S20;
+                } else if (currentChar == '\'') {
+                    currentState = S21;
+                } else if (currentChar == '<') {
+                    currentState = S22;
+                } else if (currentChar == '>') {
+                    currentState = S23;
+                } else if (currentChar == '[') {
+                    currentState = S24;
+                } else if (currentChar == ']') {
+                    currentState = S25;
                 }
             break;
 
@@ -76,7 +110,7 @@ Token Tokenizer::getNextToken() {
             //Once it is no longer alphanumeric, create a token. Once
             //token returned, return to S1.
             case S2:
-                while (pos < input.size() && isalnum(input[pos])) {
+                while (pos < input.size() && (isalnum(input[pos]) || input[pos] == '_')) {
                     pos++;
                 }
 
@@ -171,14 +205,14 @@ Token Tokenizer::getNextToken() {
 
             case S11:
                 pos++;
-                if (isalnum(input[pos])) {
+                if (input[pos + 1] != '"') {
                     startPos = pos;
                     currentState = S12;
                     break;
                 }
                 token.setValue("\"");
                 token.setType(DOUBLE_QUOTE);
-                currentState = S1;
+                currentState = S12;
                 return token;
 
             case S12:
@@ -197,7 +231,104 @@ Token Tokenizer::getNextToken() {
                 token.setType(COMMA);
                 currentState = S1;
                 return token;
+
+            case S14:
+                pos++;
+                token.setValue("%");
+                token.setType(MODULO);
+                currentState = S1;
+                return token;
+
+            case S15:
+                pos++;
+                token.setValue("*");
+                token.setType(ASTERISK);
+                currentState = S1;
+                return token;
+
+            case S16:
+                pos++;
+                token.setValue("+");
+                token.setType(PLUS);
+                currentState = S1;
+                return token;
+
+            case S17:
+                while (pos < input.size() && isdigit(input[pos])) {
+                    pos++;
+                }
+            token.setValue(input.substr(startPos, pos - startPos));
+            token.setType(INTEGER);
+            currentState = S1;
+            return token;
+
+            case S18:
+                pos += 2;
+                token.setValue(">=");
+                token.setType(GT_EQUAL);
+                currentState = S1;
+                return token;
+
+
+            case S19:
+                pos += 2;
+                token.setValue("<=");
+                token.setType(LT_EQUAL);
+                currentState = S1;
+                return token;
+
+            case S20:
+                pos++;
+                if (input[pos] == '&') {
+                    token.setValue("&&");
+                    token.setType(BOOLEAN_AND);
+                    currentState = S1;
+                    pos++;
+                    return token;
+                }
+
+            case S21:
+                pos++;
+                startPos = pos;
+                while (pos < input.size() && input[pos] != '\'') {
+                    pos++;
+                }
+                token.setValue(input.substr(startPos, pos - startPos));
+                token.setType(SINGLE_QUOTED_STRING);
+                currentState = S1;
+                pos++;
+                return token;
+
+            case S22:
+                pos++;
+                token.setValue("<");
+                token.setType(LT);
+                currentState = S1;
+                return token;
+
+            case S23:
+                pos++;
+                token.setValue(">");
+                token.setType(GT);
+                currentState = S1;
+                return token;
+
+            case S24:
+                pos++;
+                token.setValue("[");
+                token.setType(L_BRACKET);
+                currentState = S1;
+                return token;
+
+            case S25:
+                pos++;
+                token.setValue("]");
+                token.setType(R_BRACKET);
+                currentState = S1;
+                return token;
         }
+
+
     }
 
     // If we exit the loop without finding valid tokens, return an error.

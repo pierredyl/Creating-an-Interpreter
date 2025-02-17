@@ -23,6 +23,12 @@ enum TokenType {
     KEYWORD_FUNCTION,
     KEYWORD_VOID,
     KEYWORD_PRINTF,
+    KEYWORD_IF,
+    KEYWORD_ELSE,
+    KEYWORD_CHAR,
+    KEYWORD_READ,
+    KEYWORD_TRUE,
+    KEYWORD_FALSE,
     DOUBLE_QUOTE,
     MODULO,
     DOUBLE_QUOTED_STRING,
@@ -32,7 +38,16 @@ enum TokenType {
     MINUS,
     INTEGER,
     COMMA,
-
+    ASTERISK,
+    PLUS,
+    GT_EQUAL,
+    LT_EQUAL,
+    GT,
+    LT,
+    SINGLE_QUOTED_STRING,
+    BOOLEAN_AND,
+    L_BRACKET,
+    R_BRACKET,
     ERROR
 };
 

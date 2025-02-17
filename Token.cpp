@@ -60,6 +60,10 @@ string Token::typeToString(TokenType type) const{
             return "KEYWORD_VOID";
         case KEYWORD_PRINTF:
             return "KEYWORD_PRINTF";
+        case KEYWORD_IF:
+            return "KEYWORD_IF";
+        case KEYWORD_ELSE:
+            return "KEYWORD_ELSE";
         case BOOLEAN_EQUAL:
             return "BOOLEAN_EQUAL";
         case SEMICOLON:
@@ -78,5 +82,33 @@ string Token::typeToString(TokenType type) const{
             return "DOUBLE_QUOTED_STRING";
         case COMMA:
             return "COMMA";
+        case ASTERISK:
+            return "ASTERISK";
+        case PLUS:
+            return "PLUS";
+        case GT_EQUAL:
+            return "GT_EQUAL";
+        case LT_EQUAL:
+            return "LT_EQUAL";
+        case KEYWORD_CHAR:
+            return "KEYWORD_CHAR";
+        case GT:
+            return "GT";
+        case LT:
+            return "LT";
+        case SINGLE_QUOTED_STRING:
+            return "SINGLE_QUOTED_STRING";
+        case BOOLEAN_AND:
+            return "BOOLEAN_AND";
+        case L_BRACKET:
+            return "L_BRACKET";
+        case R_BRACKET:
+            return "R_BRACKET";
+        case KEYWORD_READ:
+            return "KEYWORD_READ";
+        case KEYWORD_TRUE:
+            return "KEYWORD_TRUE";
+        case KEYWORD_FALSE:
+            return "KEYWORD_FALSE";
     }
 }
