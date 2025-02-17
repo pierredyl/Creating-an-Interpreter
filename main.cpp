@@ -9,7 +9,7 @@ using namespace std;
 
 
 int main() {
-    ifstream inputFile("/Users/dylanpierre/Desktop/Creating-an-Interpreter/test_files/programming_assignment_2-test_file_4.c");
+    ifstream inputFile("/Users/dylanpierre/Desktop/Creating-an-Interpreter/test_files/programming_assignment_2-test_file_5.c");
     ofstream outputFile("/Users/dylanpierre/Desktop/Creating-an-Interpreter/output.txt");
     remove_comments(inputFile, outputFile);
     inputFile.close();

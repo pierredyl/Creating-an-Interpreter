@@ -19,7 +19,7 @@ State currentState = S1;
 bool isKeyword = false;
 bool insideString = false;
 size_t startPos = 0;
-
+int lineCount = 1;
 
 const unordered_map<string, TokenType> Tokenizer::keywordMap = {
     {"int", KEYWORD_INT},
@@ -45,8 +45,13 @@ Tokenizer::Tokenizer(const string code) {
 Token Tokenizer::getNextToken() {
     Token token;
     while (pos < input.size()) {
+        char currentChar = input[pos];
+
         //This while loop will skip whitespace until a valid input is found.
         while (pos < input.size() && isspace(input[pos])) {
+            if (input[pos] == '\n') {
+                lineCount++;
+            }
             pos++;
         }
 
@@ -55,7 +60,6 @@ Token Tokenizer::getNextToken() {
             token.setType(ERROR);
             return token;
         }
-        char currentChar = input[pos];
         switch(currentState) {
             case S1:
                 if (isalpha(currentChar) || currentChar == '\\') {
@@ -262,6 +266,9 @@ Token Tokenizer::getNextToken() {
                 while (pos < input.size() && isdigit(input[pos])) {
                     pos++;
                 }
+            if (isalnum(input[pos])) {
+                throw runtime_error("Syntax error on line " + to_string(lineCount) + ": invalid integer");
+            }
             token.setValue(input.substr(startPos, pos - startPos));
             token.setType(INTEGER);
             currentState = S1;
@@ -352,6 +359,7 @@ vector<Token> Tokenizer::tokenize() {
         tokens.push_back(token);
     }
 
+    cout << "Line Count:" << lineCount << endl;
     return tokens;
 
 }
