@@ -1,7 +1,3 @@
-//
-// Created by dylan on 2/16/2025.
-//
-
 #include <Tokenizer.h>
 #include <Token.h>
 #include <iostream>
@@ -10,16 +6,6 @@
 
 using namespace std;
 
-enum State {
-    S1, S2, S3, S4, S5, S6, S7, S8, S9, S10, S11, S12, S13, S14, S15, S16, S17, S18, S19, S20, S21, S22, S23,
-    S24, S25, S26
-};
-
-State currentState = S1;
-bool isKeyword = false;
-bool insideString = false;
-size_t startPos = 0;
-int lineCount = 1;
 
 const unordered_map<string, TokenType> Tokenizer::keywordMap = {
     {"int", KEYWORD_INT},
@@ -36,11 +22,8 @@ const unordered_map<string, TokenType> Tokenizer::keywordMap = {
     {"read", KEYWORD_READ}
 };
 
-
-Tokenizer::Tokenizer(const string code) {
-    input = code;
-    pos = 0;
-}
+Tokenizer::Tokenizer(const string& code)
+    : input(code), pos(0), startPos(0), lineCount(1), isKeyword(false), insideString(false), currentState(S1) {}
 
 Token Tokenizer::getNextToken() {
     Token token;
@@ -121,76 +104,76 @@ Token Tokenizer::getNextToken() {
                     pos++;
                 }
 
-            token.setValue(input.substr(startPos, pos - startPos));
+                token.setValue(input.substr(startPos, pos - startPos));
 
-            //check if IDENTIFIER is actually a keyword. If it is, set the token's type.
-            for (const auto& pair : keywordMap) {
-                if (pair.first == token.getValue()) {
-                    token.setType(pair.second);
-                    isKeyword = true;
+                //check if IDENTIFIER is actually a keyword. If it is, set the token's type.
+                for (const auto& pair : keywordMap) {
+                    if (pair.first == token.getValue()) {
+                        token.setType(pair.second);
+                        isKeyword = true;
+                    }
                 }
-            }
-            if (!isKeyword) {
-                token.setType(IDENTIFIER);
-            }
-            isKeyword = false;
-            currentState = S1;
-            return token;
+                if (!isKeyword) {
+                    token.setType(IDENTIFIER);
+                }
+                isKeyword = false;
+                currentState = S1;
+                return token;
 
             case S3:
                 pos++;
-            token.setValue("(");
-            token.setType(L_PAREN);
-            currentState = S1;
-            return token;
+                token.setValue("(");
+                token.setType(L_PAREN);
+                currentState = S1;
+                return token;
 
             case S4:
                 pos++;
-            token.setValue(")");
-            token.setType(R_PAREN);
-            currentState = S1;
-            return token;
+                token.setValue(")");
+                token.setType(R_PAREN);
+                currentState = S1;
+                return token;
 
             case S5:
                 pos++;
-            token.setValue("{");
-            token.setType(L_BRACE);
-            currentState = S1;
-            return token;
+                token.setValue("{");
+                token.setType(L_BRACE);
+                currentState = S1;
+                return token;
 
             case S6:
                 pos++;
-            token.setValue("}");
-            token.setType(R_BRACE);
-            currentState = S1;
-            return token;
+                token.setValue("}");
+                token.setType(R_BRACE);
+                currentState = S1;
+                return token;
 
             //Handles assigment operators and equals boolean comparisons.
             case S7:
                 pos++;
-            if (input[pos] == '=') {
-                token.setValue("==");
-                token.setType(BOOLEAN_EQUAL);
-                currentState = S1;
-                return token;
-            } else if (input[pos] != '=') {
-                token.setValue("=");
-                token.setType(ASSIGNMENT_OPERATOR);
-                currentState = S1;
-                return token;
-            }
+                if (input[pos] == '=') {
+                    token.setValue("==");
+                    token.setType(BOOLEAN_EQUAL);
+                    currentState = S1;
+                    return token;
+                } else if (input[pos] != '=') {
+                    token.setValue("=");
+                    token.setType(ASSIGNMENT_OPERATOR);
+                    currentState = S1;
+                    return token;
+                }
 
             case S8:
                 pos++;
-            if (isdigit(input[pos])) {
-                startPos = pos - 1;
-                currentState = S9;
-                break;
-            }
-            token.setValue("-");
-            token.setType(MINUS);
-            currentState = S1;
-            return token;
+                if (isdigit(input[pos])) {
+                    startPos = pos - 1;
+                    currentState = S9;
+                    break;
+                }
+                token.setValue("-");
+                token.setType(MINUS);
+                currentState = S1;
+                return token;
 
             case S9:
                 if (isdigit(input[pos])) {
@@ -205,10 +188,10 @@ Token Tokenizer::getNextToken() {
 
             case S10:
                 pos++;
-            token.setValue(";");
-            token.setType(SEMICOLON);
-            currentState = S1;
-            return token;
+                token.setValue(";");
+                token.setType(SEMICOLON);
+                currentState = S1;
+                return token;
 
             case S11:
                 pos++;
@@ -227,11 +210,11 @@ Token Tokenizer::getNextToken() {
                 while (pos < input.size() && (input[pos] != '"')) {
                     pos++;
                 }
-            token.setValue(input.substr(startPos, pos - startPos));
-            token.setType(DOUBLE_QUOTED_STRING);
-            currentState = S11;
-            insideString = false;
-            return token;
+                token.setValue(input.substr(startPos, pos - startPos));
+                token.setType(DOUBLE_QUOTED_STRING);
+                currentState = S11;
+                insideString = false;
+                return token;
 
             case S13:
                 pos++;
@@ -266,13 +249,13 @@ Token Tokenizer::getNextToken() {
                 while (pos < input.size() && isdigit(input[pos])) {
                     pos++;
                 }
-            if (isalnum(input[pos])) {
-                throw runtime_error("Syntax error on line " + to_string(lineCount) + ": invalid integer");
-            }
-            token.setValue(input.substr(startPos, pos - startPos));
-            token.setType(INTEGER);
-            currentState = S1;
-            return token;
+                if (isalnum(input[pos])) {
+                    throw runtime_error("Syntax error on line " + to_string(lineCount) + ": invalid integer");
+                }
+                token.setValue(input.substr(startPos, pos - startPos));
+                token.setType(INTEGER);
+                currentState = S1;
+                return token;
 
             case S18:
                 pos += 2;
@@ -280,7 +263,6 @@ Token Tokenizer::getNextToken() {
                 token.setType(GT_EQUAL);
                 currentState = S1;
                 return token;
-
 
             case S19:
                 pos += 2;
@@ -341,8 +323,6 @@ Token Tokenizer::getNextToken() {
                 currentState = S1;
                 return token;
         }
-
-
     }
 
     // If we exit the loop without finding valid tokens, return an error.
@@ -361,5 +341,4 @@ vector<Token> Tokenizer::tokenize() {
 
     cout << "Line Count:" << lineCount << endl;
     return tokens;
-
 }
