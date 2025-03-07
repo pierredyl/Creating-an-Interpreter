@@ -57,16 +57,19 @@ class Token {
     private:
         TokenType type;
         string value;
+        int lineNumber;
 
     public:
         Token();
         //Setters
         void setValue(const string& value);
         void setType(const TokenType& type);
+        void setLineNumber(int);
 
         //Getters
         TokenType getType() const;
         string getValue() const;
+        size_t getLineNumber() const;
 
         string typeToString(TokenType type) const;
 };

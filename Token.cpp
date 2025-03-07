@@ -14,6 +14,7 @@ using namespace std;
 Token::Token() {
     type = ERROR;
     value = "";
+    lineNumber = 0;
 }
 
 void Token::setValue(const string& val) {
@@ -23,6 +24,15 @@ void Token::setValue(const string& val) {
 void Token::setType(const TokenType& t) {
     type = t;
 }
+
+void Token::setLineNumber(int line) {
+    lineNumber = line;
+}
+
+size_t Token::getLineNumber() const {
+    return lineNumber;
+}
+
 
 TokenType Token::getType() const {
     return type;

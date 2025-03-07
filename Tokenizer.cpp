@@ -96,15 +96,13 @@ Token Tokenizer::getNextToken() {
                 }
             break;
 
-            //As long as the input is alphanumeric, keep taking input.
-            //Once it is no longer alphanumeric, create a token. Once
-            //token returned, return to S1.
             case S2:
                 while (pos < input.size() && (isalnum(input[pos]) || input[pos] == '_' || input[pos] == '\\')) {
                     pos++;
                 }
 
                 token.setValue(input.substr(startPos, pos - startPos));
+                token.setLineNumber(lineCount);
 
                 //check if IDENTIFIER is actually a keyword. If it is, set the token's type.
                 for (const auto& pair : keywordMap) {
@@ -124,6 +122,7 @@ Token Tokenizer::getNextToken() {
                 pos++;
                 token.setValue("(");
                 token.setType(L_PAREN);
+                token.setLineNumber(lineCount);
                 currentState = S1;
                 return token;
 
@@ -131,6 +130,7 @@ Token Tokenizer::getNextToken() {
                 pos++;
                 token.setValue(")");
                 token.setType(R_PAREN);
+                token.setLineNumber(lineCount);
                 currentState = S1;
                 return token;
 
@@ -138,6 +138,7 @@ Token Tokenizer::getNextToken() {
                 pos++;
                 token.setValue("{");
                 token.setType(L_BRACE);
+                token.setLineNumber(lineCount);
                 currentState = S1;
                 return token;
 
@@ -145,20 +146,22 @@ Token Tokenizer::getNextToken() {
                 pos++;
                 token.setValue("}");
                 token.setType(R_BRACE);
+                token.setLineNumber(lineCount);
                 currentState = S1;
                 return token;
 
-            //Handles assigment operators and equals boolean comparisons.
             case S7:
                 pos++;
                 if (input[pos] == '=') {
                     token.setValue("==");
                     token.setType(BOOLEAN_EQUAL);
+                    token.setLineNumber(lineCount);
                     currentState = S1;
                     return token;
                 } else if (input[pos] != '=') {
                     token.setValue("=");
                     token.setType(ASSIGNMENT_OPERATOR);
+                    token.setLineNumber(lineCount);
                     currentState = S1;
                     return token;
                 }
@@ -172,6 +175,7 @@ Token Tokenizer::getNextToken() {
                 }
                 token.setValue("-");
                 token.setType(MINUS);
+                token.setLineNumber(lineCount);
                 currentState = S1;
                 return token;
 
@@ -182,6 +186,7 @@ Token Tokenizer::getNextToken() {
                     }
                     token.setValue(input.substr(startPos, pos - startPos));
                     token.setType(INTEGER);
+                    token.setLineNumber(lineCount);
                     currentState = S1;
                     return token;
                 }
@@ -190,6 +195,7 @@ Token Tokenizer::getNextToken() {
                 pos++;
                 token.setValue(";");
                 token.setType(SEMICOLON);
+                token.setLineNumber(lineCount);
                 currentState = S1;
                 return token;
 
@@ -197,6 +203,7 @@ Token Tokenizer::getNextToken() {
                 pos++;
                 token.setValue("\"");
                 token.setType(DOUBLE_QUOTE);
+                token.setLineNumber(lineCount);
                 if (insideString == true) {
                     currentState = S12;
                     startPos = pos;
@@ -212,6 +219,7 @@ Token Tokenizer::getNextToken() {
                 }
                 token.setValue(input.substr(startPos, pos - startPos));
                 token.setType(DOUBLE_QUOTED_STRING);
+                token.setLineNumber(lineCount);
                 currentState = S11;
                 insideString = false;
                 return token;
@@ -220,6 +228,7 @@ Token Tokenizer::getNextToken() {
                 pos++;
                 token.setValue(",");
                 token.setType(COMMA);
+                token.setLineNumber(lineCount);
                 currentState = S1;
                 return token;
 
@@ -227,6 +236,7 @@ Token Tokenizer::getNextToken() {
                 pos++;
                 token.setValue("%");
                 token.setType(MODULO);
+                token.setLineNumber(lineCount);
                 currentState = S1;
                 return token;
 
@@ -234,6 +244,7 @@ Token Tokenizer::getNextToken() {
                 pos++;
                 token.setValue("*");
                 token.setType(ASTERISK);
+                token.setLineNumber(lineCount);
                 currentState = S1;
                 return token;
 
@@ -241,6 +252,7 @@ Token Tokenizer::getNextToken() {
                 pos++;
                 token.setValue("+");
                 token.setType(PLUS);
+                token.setLineNumber(lineCount);
                 currentState = S1;
                 return token;
 
@@ -254,6 +266,7 @@ Token Tokenizer::getNextToken() {
                 }
                 token.setValue(input.substr(startPos, pos - startPos));
                 token.setType(INTEGER);
+                token.setLineNumber(lineCount);
                 currentState = S1;
                 return token;
 
@@ -261,6 +274,7 @@ Token Tokenizer::getNextToken() {
                 pos += 2;
                 token.setValue(">=");
                 token.setType(GT_EQUAL);
+                token.setLineNumber(lineCount);
                 currentState = S1;
                 return token;
 
@@ -268,6 +282,7 @@ Token Tokenizer::getNextToken() {
                 pos += 2;
                 token.setValue("<=");
                 token.setType(LT_EQUAL);
+                token.setLineNumber(lineCount);
                 currentState = S1;
                 return token;
 
@@ -276,6 +291,7 @@ Token Tokenizer::getNextToken() {
                 if (input[pos] == '&') {
                     token.setValue("&&");
                     token.setType(BOOLEAN_AND);
+                    token.setLineNumber(lineCount);
                     currentState = S1;
                     pos++;
                     return token;
@@ -285,6 +301,7 @@ Token Tokenizer::getNextToken() {
                 pos++;
                 token.setValue("'");
                 token.setType(SINGLE_QUOTE);
+                token.setLineNumber(lineCount);
                 currentState = S1;
                 return token;
 
@@ -292,6 +309,7 @@ Token Tokenizer::getNextToken() {
                 pos++;
                 token.setValue("<");
                 token.setType(LT);
+                token.setLineNumber(lineCount);
                 currentState = S1;
                 return token;
 
@@ -299,6 +317,7 @@ Token Tokenizer::getNextToken() {
                 pos++;
                 token.setValue(">");
                 token.setType(GT);
+                token.setLineNumber(lineCount);
                 currentState = S1;
                 return token;
 
@@ -306,6 +325,7 @@ Token Tokenizer::getNextToken() {
                 pos++;
                 token.setValue("[");
                 token.setType(L_BRACKET);
+                token.setLineNumber(lineCount);
                 currentState = S1;
                 return token;
 
@@ -313,6 +333,7 @@ Token Tokenizer::getNextToken() {
                 pos++;
                 token.setValue("]");
                 token.setType(R_BRACKET);
+                token.setLineNumber(lineCount);
                 currentState = S1;
                 return token;
 
@@ -320,15 +341,17 @@ Token Tokenizer::getNextToken() {
                 pos++;
                 token.setValue("/");
                 token.setType(DIVIDE);
+                token.setLineNumber(lineCount);
                 currentState = S1;
                 return token;
         }
     }
 
-    // If we exit the loop without finding valid tokens, return an error.
+    // If we exit the loop without finding valid tokens, return an error token.
     token.setType(ERROR);
     return token;
 }
+
 
 vector<Token> Tokenizer::tokenize() {
     vector<Token> tokens;

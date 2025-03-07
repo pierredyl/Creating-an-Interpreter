@@ -8,4 +8,10 @@ include_directories(.)
 add_executable(Creating_an_Interpreter
     main.cpp
     remove_comments.cpp
-    remove_comments.h)
+    remove_comments.h
+        token.h
+        Tokenizer.h
+        Tokenizer.cpp
+        Token.cpp
+        RecursiveDescentParser.h
+        RecursiveDescentParser.cpp)
