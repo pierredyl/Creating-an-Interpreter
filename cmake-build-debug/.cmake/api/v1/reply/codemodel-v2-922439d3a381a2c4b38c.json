@@ -6,7 +6,7 @@
 			[
 				{
 					"build" : ".",
-					"jsonFile" : "directory-.-Debug-d0094a50bb2071803777.json",
+					"jsonFile" : "directory-.-Debug-f5ebdc15457944623624.json",
 					"minimumCMakeVersion" : 
 					{
 						"string" : "3.29"
@@ -39,7 +39,7 @@
 				{
 					"directoryIndex" : 0,
 					"id" : "Creating_an_Interpreter::@6890427a1f51a3e7e1df",
-					"jsonFile" : "target-Creating_an_Interpreter-Debug-60868d1d4cc3fdbc9a8f.json",
+					"jsonFile" : "target-Creating_an_Interpreter-Debug-969c6f1437f4fb9f8d45.json",
 					"name" : "Creating_an_Interpreter",
 					"projectIndex" : 0
 				}
@@ -49,8 +49,8 @@
 	"kind" : "codemodel",
 	"paths" : 
 	{
-		"build" : "C:/Users/dylan/CLionProjects/Creating-an-Interpreter/cmake-build-debug",
-		"source" : "C:/Users/dylan/CLionProjects/Creating-an-Interpreter"
+		"build" : "/Users/dylanpierre/Desktop/Creating-an-Interpreter/cmake-build-debug",
+		"source" : "/Users/dylanpierre/Desktop/Creating-an-Interpreter"
 	},
 	"version" : 
 	{

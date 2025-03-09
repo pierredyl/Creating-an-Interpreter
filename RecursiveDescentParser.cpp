@@ -43,22 +43,27 @@ void RecursiveDescentParser::printCSTHelper(CSTNode* node, bool isLeftChild) con
     }
 
     if (isLeftChild) {
-        cout << endl;
-        cout << node->token.getValue() << " ";
-    } else {
-        cout << node->token.getValue() << " ";
+        cout << "\n";
+        cout << "↓\n";
+    }
+
+    cout << node->token.getValue();
+
+    if (node->rightSibling != nullptr) {
+        cout << " -> ";
     }
 
     // If there's a left child, print it recursively
     if (node->leftChild != nullptr) {
-        printCSTHelper(node->leftChild, true);  // Left child is handled as a left node
+        printCSTHelper(node->leftChild, true);
     }
 
     // If there's a right sibling, print it recursively
     if (node->rightSibling != nullptr) {
-        printCSTHelper(node->rightSibling, false);  // Right sibling is handled as a right node
+        printCSTHelper(node->rightSibling, false);
     }
 }
+
 
 
 
