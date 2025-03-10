@@ -19,7 +19,8 @@ const unordered_map<string, TokenType> Tokenizer::keywordMap = {
     {"return", KEYWORD_RETURN},
     {"TRUE", KEYWORD_TRUE},
     {"FALSE", KEYWORD_FALSE},
-    {"read", KEYWORD_READ}
+    {"read", KEYWORD_READ},
+    {"while", KEYWORD_WHILE}
 };
 
 Tokenizer::Tokenizer(const string& code)

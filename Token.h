@@ -11,8 +11,11 @@
 using namespace std;
 
 enum TokenType {
+    PROGRAM_TOKEN,
     IDENTIFIER,
     L_PAREN,
+    KEYWORD_FOR,
+    KEYWORD_WHILE,
     R_PAREN,
     L_BRACE,
     R_BRACE,
@@ -34,6 +37,9 @@ enum TokenType {
     DOUBLE_QUOTED_STRING,
     SEMICOLON,
     BOOLEAN_EQUAL,
+    BOOLEAN_TRUE,
+    BOOLEAN_FALSE,
+    BOOLEAN_OR,
     ASSIGNMENT_OPERATOR,
     MINUS,
     INTEGER,
@@ -50,6 +56,7 @@ enum TokenType {
     BOOLEAN_AND,
     L_BRACKET,
     R_BRACKET,
+    KEYWORD_BOOL,
     ERROR
 };
 
@@ -61,6 +68,7 @@ class Token {
 
     public:
         Token();
+        Token(TokenType, string, int);
         //Setters
         void setValue(const string& value);
         void setType(const TokenType& type);

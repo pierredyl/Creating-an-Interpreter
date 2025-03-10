@@ -96,10 +96,11 @@ void remove_comments(ifstream& inputFile, ofstream& outputFile) {
         }
     }
 
-
+    /*
     if (currentState == S3 || currentState == S4 || currentState == S7) {
         throw runtime_error("ERROR: Program contains C-style, unterminated comment starting on line " + to_string(commentStart));
     }
+    */
 
     outputFile << lineBuffer;
 

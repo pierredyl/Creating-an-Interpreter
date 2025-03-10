@@ -17,6 +17,13 @@ Token::Token() {
     lineNumber = 0;
 }
 
+Token::Token(TokenType t, string s, int line) {
+    type = t;
+    value = s;
+    lineNumber = line;
+}
+
+
 void Token::setValue(const string& val) {
     value = val;
 }
@@ -106,6 +113,8 @@ string Token::typeToString(TokenType type) const{
             return "GT";
         case LT:
             return "LT";
+        case DIVIDE:
+            return "/";
         case SINGLE_QUOTED_STRING:
             return "SINGLE_QUOTED_STRING";
         case BOOLEAN_AND:
@@ -120,5 +129,7 @@ string Token::typeToString(TokenType type) const{
             return "KEYWORD_TRUE";
         case KEYWORD_FALSE:
             return "KEYWORD_FALSE";
+        case KEYWORD_WHILE:
+            return "KEYWORD_WHILE";
     }
 }
