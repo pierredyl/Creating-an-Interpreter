@@ -11,12 +11,10 @@ using namespace std;
 
 RecursiveDescentParser::RecursiveDescentParser(const vector<Token>& tokenList) {
     tokens = tokenList;
-    state = PROGRAM;
-    currentTokenIndex = 0;
-
-    // Create a dummy program token
-    Token programToken(PROGRAM_TOKEN, "program_root", 0);
-    Root = new CSTNode(programToken);  // Initialize the root node
+    currentTokenIndex = 1;
+    Token firstToken(tokens[0].getType(), tokens[0].getValue(), tokens[0].getLineNumber());
+    Root = new CSTNode(firstToken);
+    currentNode = Root;
 
     if (!tokens.empty()) {
         parseProgram();  // Begin parsing the program
@@ -48,20 +46,350 @@ void RecursiveDescentParser::insertNode(Token currToken) {
     currentNode = newNode;
 }
 
-void RecursiveDescentParser::updateState(parseState newState) {
-    prevState = state;
-    state = newState;
+void RecursiveDescentParser::parseProgram() {
+    if (tokens[currentTokenIndex].getType() == KEYWORD_FUNCTION ||
+        currentNode->token.getType() == KEYWORD_FUNCTION) {
+        functionDeclaration();
+    } else if (tokens[currentTokenIndex].getType() == KEYWORD_PROCEDURE &&
+         tokens[currentTokenIndex + 1].getType() == KEYWORD_MAIN) {
+        procedureMainState();
+    } else if (tokens[currentTokenIndex].getType() == KEYWORD_PROCEDURE ||
+        currentNode->token.getType() == KEYWORD_PROCEDURE) {
+        procedureState();
+    }
+}
+
+void RecursiveDescentParser::functionDeclaration() {
+    if (tokens[currentTokenIndex].getType() == KEYWORD_FUNCTION) {
+        insertNode(tokens[currentTokenIndex]);
+        consumeToken(KEYWORD_FUNCTION);
+        cout << "Consumed KEYWORD_FUNCTION" << endl;
+    }
+
+    if (tokens[currentTokenIndex].getType() == KEYWORD_INT ||
+        tokens[currentTokenIndex].getType() == KEYWORD_CHAR ||
+        tokens[currentTokenIndex].getType() == KEYWORD_BOOL) {
+        insertNode(tokens[currentTokenIndex]);
+        consumeToken(tokens[currentTokenIndex].getType());
+        cout << "Consumed DATATYPE_SPECIFIER" << endl;
+        }
+
+    if (tokens[currentTokenIndex].getType() == IDENTIFIER) {
+        insertNode(tokens[currentTokenIndex]);
+        consumeToken(IDENTIFIER);
+        cout << "Consumed IDENTIFIER" << endl;
+    }
+
+    if (tokens[currentTokenIndex].getType() == L_PAREN &&
+        (tokens[currentTokenIndex+1].getType() == KEYWORD_INT ||
+         tokens[currentTokenIndex+1].getType() == KEYWORD_CHAR ||
+         tokens[currentTokenIndex+1].getType() == KEYWORD_BOOL)) {
+        insertNode(tokens[currentTokenIndex]);
+        consumeToken(L_PAREN);
+        cout << "Consumed L_PAREN" << endl;
+        cout << "Moving to PARAMETER LIST" << endl;
+        parameterList();
+         }
+
+    if (tokens[currentTokenIndex].getType() == R_PAREN) {
+        insertNode(tokens[currentTokenIndex]);
+        consumeToken(R_PAREN);
+        cout << "Consumed R_PAREN" << endl;
+    }
+
+    if (tokens[currentTokenIndex].getType() == L_BRACE) {
+        insertNode(tokens[currentTokenIndex]);
+        consumeToken(L_BRACE);
+        cout << "Consumed L_BRACE" << endl;
+        cout << "Moving to COMPOUND_STATEMENT" << endl;
+        compoundStatement();
+    }
+
+}
+void RecursiveDescentParser::compoundStatement() {
+    cout << "Moving to STATEMENT" << endl;
+    statement();
+}
+
+void RecursiveDescentParser::statement() {
+    if (tokens[currentTokenIndex].getType() == KEYWORD_INT ||
+         tokens[currentTokenIndex].getType() == KEYWORD_CHAR ||
+         tokens[currentTokenIndex].getType() == KEYWORD_BOOL) {
+        cout << "Moving to DECLARATION_STATEMENT" << endl;
+        declarationStatement();
+    }
+
+    if (tokens[currentTokenIndex].getType() == IDENTIFIER &&
+        tokens[currentTokenIndex + 1].getType() == ASSIGNMENT_OPERATOR) {
+        cout << "Moving to ASSIGNMENT_STATEMENT" << endl;
+        assignmentStatement();
+    }
+
+    if (tokens[currentTokenIndex].getType() == KEYWORD_FOR ||
+        tokens[currentTokenIndex].getType() == KEYWORD_WHILE) {
+        cout << "Moving to ITERATION_STATEMENT" << endl;
+        iterationStatement();
+    }
+
+    if (tokens[currentTokenIndex].getType() == KEYWORD_IF) {
+        cout << "Moving to SELECTION_STATEMENT" << endl;
+        selectionStatement();
+    }
+
+    if (tokens[currentTokenIndex].getType() == KEYWORD_PRINTF) {
+        cout << "Moving to PRINTF_STATEMENT" << endl;
+        printfStatement();
+    }
+
+    if (tokens[currentTokenIndex].getType() == KEYWORD_RETURN) {
+        cout << "Moving to KEYWORD_RETURN" << endl;
+        returnStatement();
+    }
+
+    if (tokens[currentTokenIndex].getType() == L_BRACE) {
+        cout << "Moving to BLOCK_STATEMENT" << endl;
+        blockStatement();
+    }
+
+
+}
+
+void RecursiveDescentParser::declarationStatement() {
+    if (tokens[currentTokenIndex].getType() == KEYWORD_INT ||
+    tokens[currentTokenIndex].getType() == KEYWORD_CHAR ||
+    tokens[currentTokenIndex].getType() == KEYWORD_BOOL) {
+        insertNode(tokens[currentTokenIndex]);
+        consumeToken(tokens[currentTokenIndex].getType());
+        cout << "Consumed DATATYPE_SPECIFIER" << endl;
+    }
+
+    if (tokens[currentTokenIndex].getType() == IDENTIFIER) {
+        insertNode(tokens[currentTokenIndex]);
+        consumeToken(IDENTIFIER);
+        cout << "Consumed IDENTIFIER" << endl;
+    } else if (tokens[currentTokenIndex].getType () == IDENTIFIER &&
+                tokens[currentTokenIndex + 1].getType() == COMMA) {
+        cout << "MOVING TO IDENTIFIER_LIST" << endl;
+        identifierList();
+    }
+
+    if (tokens[currentTokenIndex].getType() == SEMICOLON) {
+        insertNode(tokens[currentTokenIndex]);
+        consumeToken(SEMICOLON);
+        cout << "Finished declaration statement" << endl;
+    }
+
+}
+
+void RecursiveDescentParser::iterationStatement() {
+
+}
+
+void RecursiveDescentParser::returnStatement() {
+
+}
+
+void RecursiveDescentParser::printfStatement() {
+
+}
+
+void RecursiveDescentParser::assignmentStatement() {
+    if (tokens[currentTokenIndex].getType() == IDENTIFIER) {
+        insertNode(tokens[currentTokenIndex]);
+        consumeToken(IDENTIFIER);
+        cout << "Consumed IDENTIFIER" << endl;
+    }
+
+    if (tokens[currentTokenIndex].getType() == ASSIGNMENT_OPERATOR) {
+        insertNode(tokens[currentTokenIndex]);
+        consumeToken(ASSIGNMENT_OPERATOR);
+        cout << "Consumed ASSIGNMENT_OPERATOR" << endl;
+    }
+
+    if (checkifNumericalExpression()) {
+        cout << "Moving to NUMERICAL_EXPRESSION" << endl;
+        numericalExpression();
+
+    } else if (checkifBooleanExpression()) {
+        cout << "Moving to BOOLEAN_EXPRESSION" << endl;
+        booleanExpression();
+    }
+
+    if (tokens[currentTokenIndex].getType() == SEMICOLON) {
+        insertNode(tokens[currentTokenIndex]);
+        consumeToken(SEMICOLON);
+        cout << "Consumed SEMICOLON" << endl;
+        cout << "Exiting assignmentStatement" << endl;
+    }
+
 }
 
 
+void RecursiveDescentParser::numericalExpression() {
+    if (tokens[currentTokenIndex].getType() == IDENTIFIER ||
+        tokens[currentTokenIndex].getType() == INTEGER) {
+        insertNode(tokens[currentTokenIndex]);
+        consumeToken(tokens[currentTokenIndex].getType());
+        cout << "Consumed NUMERICAL_OPERAND" << endl;
+    }
+
+    if (tokens[currentTokenIndex].getType() == L_PAREN &&
+        (tokens[currentTokenIndex+1].getType() == IDENTIFIER ||
+         tokens[currentTokenIndex+1].getType() == INTEGER) &&
+         tokens[currentTokenIndex+2].getType() == R_PAREN) {
+        insertNode(tokens[currentTokenIndex]);
+        consumeToken(tokens[currentTokenIndex].getType());
+        cout << "Consumed L_PAREN" << endl;
+        insertNode(tokens[currentTokenIndex]);
+        consumeToken(tokens[currentTokenIndex].getType());
+        cout << "Consumed NUMERICAL_OPERAD" << endl;
+        insertNode(tokens[currentTokenIndex]);
+        consumeToken(tokens[currentTokenIndex].getType());
+        cout << "Consumed R_PAREN" << endl;
+    }
+
+    cout << "Finish numerical expression" << endl;
+
+}
+
+
+void RecursiveDescentParser::booleanExpression() {
+    if (tokens[currentTokenIndex].getType() == BOOLEAN_TRUE ||
+        tokens[currentTokenIndex].getType() == BOOLEAN_FALSE ||
+        tokens[currentTokenIndex].getType() == IDENTIFIER) {
+        insertNode(tokens[currentTokenIndex]);
+        consumeToken(tokens[currentTokenIndex].getType());
+        cout << "Consumed BOOLEAN_TRUE, BOOLEAN_FALSE, OR IDENTIFIER" << endl;
+    }
+
+    if (tokens[currentTokenIndex].getType() == L_PAREN &&
+        tokens[currentTokenIndex+1].getType() == IDENTIFIER) {
+        insertNode(tokens[currentTokenIndex]);
+        consumeToken(L_PAREN);
+        cout << "Consumed L_PAREN" << endl;
+    }
+
+    if (checkifNumericalExpression()) {
+        cout << "Moving to NUMERICAL_EXPRESSION" << endl;
+        numericalExpression();
+        if (tokens[currentTokenIndex].getType() == LT_EQUAL) {
+            insertNode(tokens[currentTokenIndex]);
+            consumeToken(LT_EQUAL);
+            cout << "Moving to NUMERICAL_EXPRESSION" << endl;
+            numericalExpression();
+        } else if (tokens[currentTokenIndex].getType() == GT_EQUAL) {
+            insertNode(tokens[currentTokenIndex]);
+            consumeToken(GT_EQUAL);
+            cout << "Moving to NUMERICAL_EXPRESSION" << endl;
+            numericalExpression();
+        }
+    }
+
+
+
+}
+void RecursiveDescentParser::selectionStatement() {
+    if (tokens[currentTokenIndex].getType() == KEYWORD_IF) {
+        insertNode(tokens[currentTokenIndex]);
+        consumeToken(KEYWORD_IF);
+        cout << "Consumed KEYWORD_IF" << endl;
+    }
+
+    if (checkifBooleanExpression()) {
+        cout << "Moving to BOOLEAN_EXPRESSION" << endl;
+        booleanExpression();
+    }
+
+    if (tokens[currentTokenIndex].getType() == R_PAREN) {
+        insertNode(tokens[currentTokenIndex]);
+        consumeToken(R_PAREN);
+        cout << "Consumed R_PAREN" << endl;
+        cout << "Moving to STATEMENT" << endl;
+        statement();
+    }
+}
+
+void RecursiveDescentParser::identifierList() {
+
+}
+
+void RecursiveDescentParser::parameterList() {
+    if (tokens[currentTokenIndex].getType() == KEYWORD_INT ||
+        tokens[currentTokenIndex].getType() == KEYWORD_CHAR ||
+        tokens[currentTokenIndex].getType() == KEYWORD_BOOL) {
+        insertNode(tokens[currentTokenIndex]);
+        consumeToken(tokens[currentTokenIndex].getType());
+        cout << "Consumed DATATYPE_SPECIFIER" << endl;
+    }
+
+    if (tokens[currentTokenIndex].getType() == IDENTIFIER && (
+        tokens[currentTokenIndex+1].getType() == KEYWORD_INT ||
+        tokens[currentTokenIndex+1].getType() == KEYWORD_CHAR ||
+        tokens[currentTokenIndex+1].getType() == KEYWORD_BOOL)) {
+        insertNode(tokens[currentTokenIndex]);
+        consumeToken(IDENTIFIER);
+        cout << "Consuming IDENTIFIER, repeating PARAMETER_LIST" << endl;
+        parameterList();
+    } else if (tokens[currentTokenIndex].getType() == IDENTIFIER) {
+        insertNode(tokens[currentTokenIndex]);
+        consumeToken(IDENTIFIER);
+        cout << "Consuming IDENTIFIER, end of parameter list" << endl;
+    }
+}
+void RecursiveDescentParser::procedureState() {
+    if (tokens[currentTokenIndex].getType() == KEYWORD_PROCEDURE) {
+        insertNode(tokens[currentTokenIndex]);
+        consumeToken(KEYWORD_PROCEDURE);
+        cout << "Consumed KEYWORD_PROCEDURE" << endl;
+    }
+}
+
+void RecursiveDescentParser::procedureMainState() {
+    if (tokens[currentTokenIndex].getType() == KEYWORD_PROCEDURE) {
+        insertNode(tokens[currentTokenIndex]);
+        consumeToken(KEYWORD_PROCEDURE);
+        cout << "Consumed KEYWORD_PROCEDURE" << endl;
+        if (tokens[currentTokenIndex].getType() == KEYWORD_MAIN) {
+            insertNode(tokens[currentTokenIndex]);
+            consumeToken(KEYWORD_MAIN);
+            cout << "Consumed KEYWORD_MAIN" << endl;
+        }
+    }
+}
+
+bool RecursiveDescentParser::checkifNumericalExpression() {
+    if (tokens[currentTokenIndex].getType() == IDENTIFIER ||
+        tokens[currentTokenIndex].getType() == INTEGER ||
+        tokens[currentTokenIndex].getType() == L_PAREN) {
+        return true;
+    }
+    return false;
+}
+
+bool RecursiveDescentParser::checkifBooleanExpression() {
+    if (tokens[currentTokenIndex].getType() == BOOLEAN_AND ||
+                    tokens[currentTokenIndex].getType() == BOOLEAN_OR ||
+                    tokens[currentTokenIndex].getType() == IDENTIFIER ||
+                    (tokens[currentTokenIndex].getType() == L_PAREN &&
+                     tokens[currentTokenIndex].getType() == IDENTIFIER) ||
+                     (checkifNumericalExpression() && tokens[currentTokenIndex+2].getType() == BOOLEAN_EQUAL) ||
+                     (checkifNumericalExpression() && tokens[currentTokenIndex+2].getType() == LT_EQUAL) ||
+                     (checkifNumericalExpression() && tokens[currentTokenIndex+2].getType() == GT_EQUAL)) {
+        return true;
+    }
+    return false;
+}
+
+/*
 void RecursiveDescentParser::parseProgram() {
     TokenType type;
     CSTNode* programNode = Root;
     currentNode = programNode;
+    int whileLoopIndex = 0;
 
 
-
-    while (currentTokenIndex < tokens.size() && state != ACCEPT) {
+    while (currentTokenIndex < tokens.size() && state != ACCEPT && whileLoopIndex < 200) {
+        whileLoopIndex++;
         Token currentToken = tokens[currentTokenIndex];
         cout << "current state: " << state << ", ";
         cout << "current token: " << currentToken.getValue() << endl;
@@ -264,6 +592,8 @@ void RecursiveDescentParser::parseProgram() {
                            insertNode(currentToken);
                            consumeToken(type);
                            updateState(BLOCK_STATEMENT);
+                       } else if (prevState == INITIALIZATION_EXPRESSION) {
+                           updateState(ITERATION_STATEMENT);
                        }
             break;
 
@@ -342,10 +672,29 @@ void RecursiveDescentParser::parseProgram() {
             case ITERATION_STATEMENT:
                 type = currentToken.getType();
 
+                if(type == L_PAREN && tokens[currentTokenIndex + 1].getType() == IDENTIFIER) {
+                    insertNode(currentToken);
+                    consumeToken(type);
+                    updateState(BOOLEAN_EXPRESSION);
+                }
+
+            case INITIALIZATION_EXPRESSION:
+                type = currentToken.getType();
+                if (type == IDENTIFIER && tokens[currentTokenIndex + 1].getType() == ASSIGNMENT_OPERATOR) {
+                    insertNode(currentToken);
+                    consumeToken(type);
+                } else if (type == ASSIGNMENT_OPERATOR && tokens[currentTokenIndex + 1].getType() ==
+                    IDENTIFIER) {
+                    insertNode(currentToken);
+                    consumeToken(type);
+                    updateState(BOOLEAN_EXPRESSION);
+                }
+
+
         }
         }
     }
-
+*/
 
 void RecursiveDescentParser::printCSTHelper(CSTNode* node, bool isLeftChild) const {
     // Base case: If the node is null, return

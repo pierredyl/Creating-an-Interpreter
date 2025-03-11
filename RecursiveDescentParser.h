@@ -14,12 +14,6 @@ using namespace std;
 
 class RecursiveDescentParser {
 
-  enum parseState {PROGRAM, FUNCTION_DECLARATION, PROCEDURE_DECLARATION, MAIN_PROCEDURE,
-    EXPRESSION, IDENTIFIER_STATE, PARAMETER_LIST, COMPOUND_STATEMENT, SELECTION_STATEMENT, BOOLEAN_EXPRESSION,
-    DECLARATION_STATEMENT, ASSIGNMENT_STATEMENT, NUMERICAL_EXPRESSION, BLOCK_STATEMENT, STATEMENT, RETURN_STATEMENT,
-    ITERATION_STATEMENT, PRINTF_STATEMENT,
-    ACCEPT};
-
 
 
 private:
@@ -37,21 +31,50 @@ private:
   vector<Token> tokens;
   int currentTokenIndex;
   CSTNode* currentNode = nullptr;
-  parseState state;
-  parseState prevState;
   void printCSTHelper(CSTNode *node, bool isLeftChild) const;
 
 
 public:
   RecursiveDescentParser(const vector<Token>& tokens);
   bool consumeToken(TokenType expectedType);
-
   void insertNode(Token currToken);
-
-  void updateState(parseState newState);
-
-  bool checkSameLine(int, int);
   void parseProgram();
+  void functionDeclaration();
+
+  void compoundStatement();
+
+  void statement();
+
+  void declarationStatement();
+
+  void iterationStatement();
+
+  void returnStatement();
+
+  void printfStatement();
+
+  void assignmentStatement();
+
+  void numericalExpression();
+
+  void booleanExpression();
+
+  void selectionStatement();
+
+  void identifierList();
+
+  void parameterList();
+
+  void procedureState();
+
+  void procedureMainState();
+
+  bool checkifNumericalExpression();
+
+  bool checkifBooleanExpression();
+
+  bool checkIfNumericalOperand();
+
   vector<Token> getTokens();
   void printCST() const;
 
