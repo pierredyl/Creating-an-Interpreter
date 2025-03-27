@@ -10,11 +10,9 @@ using namespace std;
 
 
 int main() {
-    ifstream inputFile("C:/Users/dylan/CLionProjects/Creating-an-Interpreter/test_files/programming_assignment_3-test_file_2.c");
+    ifstream inputFile("C:/Users/dylan/CLionProjects/Creating-an-Interpreter/test_files/programming_assignment_3-test_file_3.c");
     ofstream outputFile("C:/Users/dylan/CLionProjects/Creating-an-Interpreter/output.txt");
     remove_comments(inputFile, outputFile);
-    inputFile.close();
-
     inputFile.open("C:/Users/dylan/CLionProjects/Creating-an-Interpreter/output.txt");
     stringstream buffer;
     buffer << inputFile.rdbuf();

@@ -10,6 +10,8 @@ using namespace std;
 const unordered_map<string, TokenType> Tokenizer::keywordMap = {
     {"int", KEYWORD_INT},
     {"main", KEYWORD_MAIN},
+    {"char", KEYWORD_CHAR},
+    {"bool", KEYWORD_BOOL},
     {"procedure", KEYWORD_PROCEDURE},
     {"void", KEYWORD_VOID},
     {"printf", KEYWORD_PRINTF},
@@ -20,7 +22,9 @@ const unordered_map<string, TokenType> Tokenizer::keywordMap = {
     {"TRUE", KEYWORD_TRUE},
     {"FALSE", KEYWORD_FALSE},
     {"read", KEYWORD_READ},
-    {"while", KEYWORD_WHILE}
+    {"while", KEYWORD_WHILE},
+    {"LOGICAL_NOT", LOGICAL_NOT},
+    {"for", KEYWORD_FOR}
 };
 
 Tokenizer::Tokenizer(const string& code)
@@ -83,6 +87,7 @@ Token Tokenizer::getNextToken() {
                 } else if (currentChar == '&') {
                     currentState = S20;
                 } else if (currentChar == '\'') {
+                    insideString = true;
                     currentState = S21;
                 } else if (currentChar == '<') {
                     currentState = S22;
@@ -94,7 +99,10 @@ Token Tokenizer::getNextToken() {
                     currentState = S25;
                 } else if (currentChar == '/') {
                     currentState = S26;
+                } else if (currentChar == '!') {
+                    currentState = S27;
                 }
+
             break;
 
             case S2:
@@ -102,64 +110,67 @@ Token Tokenizer::getNextToken() {
                     pos++;
                 }
 
-                token.setValue(input.substr(startPos, pos - startPos));
-                token.setLineNumber(lineCount);
+            token.setValue(input.substr(startPos, pos - startPos));
+            token.setLineNumber(lineCount);
 
-                //check if IDENTIFIER is actually a keyword. If it is, set the token's type.
-                for (const auto& pair : keywordMap) {
-                    if (pair.first == token.getValue()) {
-                        token.setType(pair.second);
-                        isKeyword = true;
-                    }
+            //check if IDENTIFIER is actually a keyword. If it is, set the token's type.
+            for (const auto& pair : keywordMap) {
+                if (pair.first == token.getValue()) {
+                    token.setType(pair.second);
+                    isKeyword = true;
                 }
-                if (!isKeyword) {
-                    token.setType(IDENTIFIER);
-                }
-                isKeyword = false;
-                currentState = S1;
-                return token;
+            }
+            if (!isKeyword) {
+                token.setType(IDENTIFIER);
+            }
+            isKeyword = false;
+            currentState = S1;
+            return token;
 
             case S3:
                 pos++;
-                token.setValue("(");
-                token.setType(L_PAREN);
-                token.setLineNumber(lineCount);
-                currentState = S1;
-                return token;
+            token.setValue("(");
+            token.setType(L_PAREN);
+            token.setLineNumber(lineCount);
+            currentState = S1;
+            return token;
 
             case S4:
                 pos++;
-                token.setValue(")");
-                token.setType(R_PAREN);
-                token.setLineNumber(lineCount);
-                currentState = S1;
-                return token;
+            token.setValue(")");
+            token.setType(R_PAREN);
+            token.setLineNumber(lineCount);
+            currentState = S1;
+            return token;
 
             case S5:
                 pos++;
-                token.setValue("{");
-                token.setType(L_BRACE);
-                token.setLineNumber(lineCount);
-                currentState = S1;
-                return token;
+            token.setValue("{");
+            token.setType(L_BRACE);
+            token.setLineNumber(lineCount);
+            currentState = S1;
+            return token;
 
             case S6:
                 pos++;
-                token.setValue("}");
-                token.setType(R_BRACE);
-                token.setLineNumber(lineCount);
-                currentState = S1;
-                return token;
+            token.setValue("}");
+            token.setType(R_BRACE);
+            token.setLineNumber(lineCount);
+            currentState = S1;
+            return token;
 
             case S7:
                 pos++;
-                if (input[pos] == '=') {
+                if (currentChar == '=' && input[pos] == '=') {
                     token.setValue("==");
                     token.setType(BOOLEAN_EQUAL);
                     token.setLineNumber(lineCount);
                     currentState = S1;
+                    pos++;
                     return token;
-                } else if (input[pos] != '=') {
+                }
+
+                if (currentChar == '=' && input[pos] != '=') {
                     token.setValue("=");
                     token.setType(ASSIGNMENT_OPERATOR);
                     token.setLineNumber(lineCount);
@@ -303,8 +314,54 @@ Token Tokenizer::getNextToken() {
                 token.setValue("'");
                 token.setType(SINGLE_QUOTE);
                 token.setLineNumber(lineCount);
-                currentState = S1;
+                if (insideString == true) {
+                    currentState = S28;
+                    startPos = pos;
+                    return token;
+                } else {
+                    currentState = S1;
+                    return token;
+                }
+
+            case S28:
+                while (pos < input.size() && (input[pos] != '\'')) {
+                    pos++;
+                }
+                token.setValue(input.substr(startPos, pos - startPos));
+                token.setType(SINGLE_QUOTED_STRING);
+                token.setLineNumber(lineCount);
+                currentState = S21;
+                insideString = false;
                 return token;
+
+            /*
+            case S11:
+            pos++;
+            token.setValue("\"");
+            token.setType(DOUBLE_QUOTE);
+            token.setLineNumber(lineCount);
+            if (insideString == true) {
+            currentState = S12;
+            startPos = pos;
+            return token;
+            } else {
+            currentState = S1;
+            return token;
+            }
+
+            case S12:
+            while (pos < input.size() && (input[pos] != '"')) {
+            pos++;
+            }
+            token.setValue(input.substr(startPos, pos - startPos));
+            token.setType(DOUBLE_QUOTED_STRING);
+            token.setLineNumber(lineCount);
+            currentState = S11;
+            insideString = false;
+            return token;
+            */
+
+
 
             case S22:
                 pos++;
@@ -345,7 +402,16 @@ Token Tokenizer::getNextToken() {
                 token.setLineNumber(lineCount);
                 currentState = S1;
                 return token;
+
+            case S27:
+            pos++;
+            token.setValue("!");
+            token.setType(LOGICAL_NOT);
+            token.setLineNumber(lineCount);
+            currentState = S1;
+            return token;
         }
+
     }
 
     // If we exit the loop without finding valid tokens, return an error token.

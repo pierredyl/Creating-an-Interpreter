@@ -131,5 +131,14 @@ string Token::typeToString(TokenType type) const{
             return "KEYWORD_FALSE";
         case KEYWORD_WHILE:
             return "KEYWORD_WHILE";
+        case SINGLE_QUOTE:
+            return "SINGLE_QUOTE";
+        case LOGICAL_NOT:
+            return "LOGICAL_NOT";
+        case KEYWORD_FOR:
+            return "KEYWORD_FOR";
+        case KEYWORD_BOOL:
+            return "KEYWORD_BOOL";
+
     }
 }

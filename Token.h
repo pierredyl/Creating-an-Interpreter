@@ -17,6 +17,7 @@ enum TokenType {
     KEYWORD_FOR,
     KEYWORD_WHILE,
     R_PAREN,
+    LOGICAL_NOT,
     L_BRACE,
     R_BRACE,
     KEYWORD_INT,

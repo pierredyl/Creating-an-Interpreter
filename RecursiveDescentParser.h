@@ -30,6 +30,8 @@ private:
   CSTNode* Root;
   vector<Token> tokens;
   int currentTokenIndex;
+  bool inSelectionStatement = false;
+  bool inIterationStatement = false;
   CSTNode* currentNode = nullptr;
   void printCSTHelper(CSTNode *node, bool isLeftChild) const;
 
@@ -40,41 +42,55 @@ public:
   void insertNode(Token currToken);
   void parseProgram();
   void functionDeclaration();
-
   void compoundStatement();
-
   void statement();
-
+  bool isStatement() const;
   void declarationStatement();
+  bool checkNumericalOperand();
+  bool isDatatypeSpecifier();
+
+  bool isIdentifierList();
+
+  bool isIdentifierArrayList();
+
+  bool checkNumericalOperator();
+
+  bool isRelationalExpression();
+
+  void initializationExpression();
 
   void iterationStatement();
 
+  void iterationAssignment();
+
   void returnStatement();
-
+  void expression();
   void printfStatement();
-
   void assignmentStatement();
-
   void numericalExpression();
+
+  bool isIdentifierArrayParameterList();
+
+  void userDefinedFunction();
+
+  void identifierAndIdentifierArrayParameterList();
 
   void booleanExpression();
 
+  void numericalOperator();
+
+  void numericalOperand();
+
   void selectionStatement();
-
+  void blockStatement();
+  void identifierAndArrayList();
+  void identifierArrayList();
   void identifierList();
-
   void parameterList();
-
   void procedureState();
-
   void procedureMainState();
-
   bool checkifNumericalExpression();
-
   bool checkifBooleanExpression();
-
-  bool checkIfNumericalOperand();
-
   vector<Token> getTokens();
   void printCST() const;
 
