@@ -139,6 +139,10 @@ string Token::typeToString(TokenType type) const{
             return "KEYWORD_FOR";
         case KEYWORD_BOOL:
             return "KEYWORD_BOOL";
+        case BOOLEAN_TRUE:
+            return "BOOLEAN_TRUE";
+        case BOOLEAN_FALSE:
+            return "BOOLEAN_FALSE";
 
     }
 }

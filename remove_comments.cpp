@@ -25,6 +25,8 @@ void remove_comments(ifstream& inputFile, ofstream& outputFile) {
             lineNumber++;
         }
 
+
+
         switch (currentState) {
             case S0:
                 if (ch == '/') {
@@ -77,7 +79,6 @@ void remove_comments(ifstream& inputFile, ofstream& outputFile) {
                 } else if (ch == '*') {
                     lineBuffer[lineBuffer.size() - 1] = ' ';
                 } else {
-                    lineBuffer[lineBuffer.size() - 1] = ' ';
                     currentState = S3;
                 }
                 break;

@@ -1,5 +1,5 @@
-#include <Tokenizer.h>
-#include <Token.h>
+#include "Tokenizer.h"
+#include "Token.h"
 #include <iostream>
 #include <vector>
 #include <cctype>
@@ -19,8 +19,8 @@ const unordered_map<string, TokenType> Tokenizer::keywordMap = {
     {"else", KEYWORD_ELSE},
     {"function", KEYWORD_FUNCTION},
     {"return", KEYWORD_RETURN},
-    {"TRUE", KEYWORD_TRUE},
-    {"FALSE", KEYWORD_FALSE},
+    {"TRUE", BOOLEAN_TRUE},
+    {"FALSE", BOOLEAN_FALSE},
     {"read", KEYWORD_READ},
     {"while", KEYWORD_WHILE},
     {"LOGICAL_NOT", LOGICAL_NOT},

@@ -21,14 +21,14 @@ function bool empty_string (char string[4096])
   int num_bytes_before_null;
   bool found_null;
 
-  found_null = false;
+  found_null = FALSE;
   num_bytes_before_null = 0;
   i = 0;
   while ((i < 4096) && (!found_null))
   {
     if (string[i] == '\x0')
     {
-      found_null = true;
+      found_null = TRUE;
     }
     else
     {

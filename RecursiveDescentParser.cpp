@@ -97,6 +97,11 @@ void RecursiveDescentParser::functionDeclaration() {
             consumeToken(tokens[currentTokenIndex].getType());
             cout << "Consumed DATATYPE_SPECIFIER" << endl;
 
+            if (tokens[currentTokenIndex].getType() == KEYWORD_PRINTF) {
+                cout << "Syntax error: cannot define a function with reserved-word printf" << endl;
+                throw runtime_error("Syntax error");
+            }
+
             if (tokens[currentTokenIndex].getType() == IDENTIFIER) {
                 insertNode(tokens[currentTokenIndex]);
                 consumeToken(tokens[currentTokenIndex].getType());
@@ -139,54 +144,6 @@ void RecursiveDescentParser::functionDeclaration() {
             }
         }
     }
-
-    /*
-
-    if (isDatatypeSpecifier()) {
-        insertNode(tokens[currentTokenIndex]);
-        consumeToken(tokens[currentTokenIndex].getType());
-        cout << "Consumed DATATYPE_SPECIFIER" << endl;
-    }
-
-    if (tokens[currentTokenIndex].getType() == IDENTIFIER) {
-        insertNode(tokens[currentTokenIndex]);
-        consumeToken(IDENTIFIER);
-        cout << "Consumed IDENTIFIER" << endl;
-    }
-
-    if (tokens[currentTokenIndex].getType() == L_PAREN &&
-        (tokens[currentTokenIndex+1].getType() == KEYWORD_INT ||
-         tokens[currentTokenIndex+1].getType() == KEYWORD_CHAR ||
-         tokens[currentTokenIndex+1].getType() == KEYWORD_BOOL)) {
-        insertNode(tokens[currentTokenIndex]);
-        consumeToken(L_PAREN);
-        cout << "Consumed L_PAREN" << endl;
-        cout << "Moving to PARAMETER LIST" << endl;
-        parameterList();
-         }
-
-    if (tokens[currentTokenIndex].getType() == R_PAREN) {
-        insertNode(tokens[currentTokenIndex]);
-        consumeToken(R_PAREN);
-        cout << "Consumed R_PAREN" << endl;
-    }
-
-    if (tokens[currentTokenIndex].getType() == L_BRACE) {
-        insertNode(tokens[currentTokenIndex]);
-        consumeToken(L_BRACE);
-        cout << "Consumed L_BRACE" << endl;
-        cout << "Moving to COMPOUND_STATEMENT" << endl;
-        compoundStatement();
-    }
-
-    if (tokens[currentTokenIndex].getType() == R_BRACE) {
-        insertNode(tokens[currentTokenIndex]);
-        consumeToken(R_BRACE);
-        cout << "Consumed R_BRACE" << endl;
-        cout << "Exiting function declaration" << endl;
-    }
-    */
-
 }
 void RecursiveDescentParser::compoundStatement() {
     cout << "Moving to STATEMENT" << endl;
@@ -198,7 +155,6 @@ void RecursiveDescentParser::compoundStatement() {
 }
 
 void RecursiveDescentParser::statement() {
-
     if (isDatatypeSpecifier()) {
         cout << "Moving to DECLARATION_STATEMENT" << endl;
         declarationStatement();
@@ -208,7 +164,14 @@ void RecursiveDescentParser::statement() {
         tokens[currentTokenIndex + 1].getType() == ASSIGNMENT_OPERATOR) {
         cout << "Moving to ASSIGNMENT_STATEMENT" << endl;
         assignmentStatement();
+        }
+
+    if (tokens[currentTokenIndex].getType() == IDENTIFIER &&
+        tokens[currentTokenIndex + 1].getType() == L_BRACKET) {
+        cout << "Moving to ASSIGNMENT_STATEMENT" << endl;
+        assignmentStatement();
     }
+
 
     if (tokens[currentTokenIndex].getType() == KEYWORD_FOR ||
         tokens[currentTokenIndex].getType() == KEYWORD_WHILE) {
@@ -281,6 +244,13 @@ bool RecursiveDescentParser::isStatement() const {
         }
     }
 
+    if (currentType == IDENTIFIER) {
+        TokenType nextType = tokens[currentTokenIndex + 1].getType();
+        if (nextType == L_BRACKET) {
+            return true;
+        }
+    }
+
     return false; // Not a valid statement
 }
 
@@ -317,6 +287,16 @@ void RecursiveDescentParser::declarationStatement() {
         insertNode(tokens[currentTokenIndex]);
         consumeToken(tokens[currentTokenIndex].getType());
         cout << "Consumed DATATYPE_SPECIFIER" << endl;
+
+        if (isDatatypeSpecifier()) {
+            cout << "Syntax error on " << tokens[currentTokenIndex].getLineNumber() << ": array declaration size must be a positive integer.";
+            throw runtime_error("syntax error");
+        }
+
+        if (tokens[currentTokenIndex].getType() == KEYWORD_VOID) {
+            cout << "syntax error: reserved word void cannot be for the name of a variable" << endl;
+            throw runtime_error("Syntax error");
+        }
 
         if (isIdentifierArrayList()) {
             identifierArrayList();
@@ -416,6 +396,8 @@ void RecursiveDescentParser::iterationStatement() {
             cout << "Consumed L_PAREN" << endl;
 
             booleanExpression();
+            cout << "current token: " << tokens[currentTokenIndex].getValue() << endl;
+            cout << "next token: " << tokens[currentTokenIndex + 1].getValue() << endl;
 
             if (tokens[currentTokenIndex].getType() == R_PAREN) {
                 insertNode(tokens[currentTokenIndex]);
@@ -539,14 +521,14 @@ void RecursiveDescentParser::returnStatement() {
         insertNode(tokens[currentTokenIndex]);
         consumeToken(KEYWORD_RETURN);
         cout << "Consumed KEYWORD_RETURN" << endl;
-        cout << "Moving to EXPRESSION" << endl;
+        cout << "moving to expression" << endl;
         expression();
-    }
 
-    if (tokens[currentTokenIndex].getType() == SEMICOLON) {
-        insertNode(tokens[currentTokenIndex]);
-        consumeToken(SEMICOLON);
-        cout << "Finished return statement" << endl;
+        if (tokens[currentTokenIndex].getType() == SEMICOLON) {
+            insertNode(tokens[currentTokenIndex]);
+            consumeToken(SEMICOLON);
+            cout << "Finished return statement" << endl;
+        }
     }
 }
 
@@ -644,77 +626,91 @@ void RecursiveDescentParser::printfStatement() {
 
 void RecursiveDescentParser::assignmentStatement() {
     if (tokens[currentTokenIndex].getType() == IDENTIFIER) {
-        insertNode(tokens[currentTokenIndex]);
-        consumeToken(IDENTIFIER);
-        cout << "Consumed IDENTIFIER" << endl;
-
-        if (tokens[currentTokenIndex].getType() == ASSIGNMENT_OPERATOR) {
+        if (tokens[currentTokenIndex+1].getType() == L_BRACKET) {
+            identifierAndIdentifierArrayParameterList();
+        } else {
             insertNode(tokens[currentTokenIndex]);
-            consumeToken(ASSIGNMENT_OPERATOR);
-            cout << "Consumed ASSIGNMENT_OPERATOR" << endl;
+            consumeToken(IDENTIFIER);
+            cout << "Consumed IDENTIFIER" << endl;
+        }
 
-            cout << "Moving to EXPRESSION" << endl;
-            expression();
-
-            if (tokens[currentTokenIndex].getType() == SEMICOLON) {
+            if (tokens[currentTokenIndex].getType() == ASSIGNMENT_OPERATOR) {
                 insertNode(tokens[currentTokenIndex]);
-                consumeToken(SEMICOLON);
-                cout << "Consumed SEMICOLON" << endl;
-                return;
-            }
+                consumeToken(ASSIGNMENT_OPERATOR);
+                cout << "Consumed ASSIGNMENT_OPERATOR" << endl;
 
-            if (tokens[currentTokenIndex].getType() == SINGLE_QUOTE) {
-                insertNode(tokens[currentTokenIndex]);
-                consumeToken(SINGLE_QUOTE);
-                cout << "Consumed SINGLE_QUOTE" << endl;
+                cout << "Moving to EXPRESSION" << endl;
+                expression();
 
-                if (tokens[currentTokenIndex].getType() == SINGLE_QUOTED_STRING) {
+                if (tokens[currentTokenIndex].getType() == SEMICOLON) {
                     insertNode(tokens[currentTokenIndex]);
-                    consumeToken(SINGLE_QUOTED_STRING);
-                    cout << "Consumed SINGLE_QUOTED_STRING" << endl;
+                    consumeToken(SEMICOLON);
+                    cout << "Consumed SEMICOLON" << endl;
+                    return;
+                }
 
-                    if (tokens[currentTokenIndex].getType() == SINGLE_QUOTE) {
+                if (tokens[currentTokenIndex].getType() == SINGLE_QUOTE) {
+                    insertNode(tokens[currentTokenIndex]);
+                    consumeToken(SINGLE_QUOTE);
+                    cout << "Consumed SINGLE_QUOTE" << endl;
+
+                    if (tokens[currentTokenIndex].getType() == SINGLE_QUOTED_STRING) {
                         insertNode(tokens[currentTokenIndex]);
-                        consumeToken(SINGLE_QUOTE);
-                        cout << "Consumed SINGLE_QUOTE" << endl;
+                        consumeToken(SINGLE_QUOTED_STRING);
+                        cout << "Consumed SINGLE_QUOTED_STRING" << endl;
 
-                        if (tokens[currentTokenIndex].getType() == SEMICOLON) {
+                        if (tokens[currentTokenIndex].getType() == SINGLE_QUOTE) {
                             insertNode(tokens[currentTokenIndex]);
-                            consumeToken(SEMICOLON);
-                            cout << "Consumed SEMICOLON" << endl;
-                            return;
+                            consumeToken(SINGLE_QUOTE);
+                            cout << "Consumed SINGLE_QUOTE" << endl;
+
+                            if (tokens[currentTokenIndex].getType() == SEMICOLON) {
+                                insertNode(tokens[currentTokenIndex]);
+                                consumeToken(SEMICOLON);
+                                cout << "Consumed SEMICOLON" << endl;
+                                return;
+                            }
                         }
                     }
                 }
-            }
 
 
-            if (tokens[currentTokenIndex].getType() == DOUBLE_QUOTE) {
-                insertNode(tokens[currentTokenIndex]);
-                consumeToken(DOUBLE_QUOTE);
-                cout << "Consumed DOUBLE_QUOTE" << endl;
-
-                if (tokens[currentTokenIndex].getType() == DOUBLE_QUOTED_STRING) {
+                if (tokens[currentTokenIndex].getType() == DOUBLE_QUOTE) {
                     insertNode(tokens[currentTokenIndex]);
-                    consumeToken(DOUBLE_QUOTED_STRING);
-                    cout << "Consumed DOUBLE_QUOTED_STRING" << endl;
+                    consumeToken(DOUBLE_QUOTE);
+                    cout << "Consumed DOUBLE_QUOTE" << endl;
 
-                    if (tokens[currentTokenIndex].getType() == DOUBLE_QUOTE) {
+                    if (tokens[currentTokenIndex].getType() == DOUBLE_QUOTED_STRING) {
+                        char lastChar = tokens[currentTokenIndex].getValue().back();
+                        if (lastChar == '\\' && tokens[currentTokenIndex+1].getType() == DOUBLE_QUOTE) {
+                            cout << "syntax error: closing quote is missing." << endl;
+                            throw runtime_error("synytax error");
+                        }
                         insertNode(tokens[currentTokenIndex]);
-                        consumeToken(DOUBLE_QUOTE);
-                        cout << "Consumed DOUBLE_QUOTE" << endl;
+                        consumeToken(DOUBLE_QUOTED_STRING);
+                        cout << "Consumed DOUBLE_QUOTED_STRING" << endl;
 
-                        if (tokens[currentTokenIndex].getType() == SEMICOLON) {
+                        if (tokens[currentTokenIndex].getValue().back() == '\\') {
+                            cout << "syntax error: closing quote is missing." << endl;
+                            throw runtime_error("syntax error");
+                        }
+
+                        if (tokens[currentTokenIndex].getType() == DOUBLE_QUOTE) {
                             insertNode(tokens[currentTokenIndex]);
-                            consumeToken(SEMICOLON);
-                            cout << "Consumed SEMICOLON" << endl;
-                            return;
+                            consumeToken(DOUBLE_QUOTE);
+                            cout << "Consumed DOUBLE_QUOTE" << endl;
+
+                            if (tokens[currentTokenIndex].getType() == SEMICOLON) {
+                                insertNode(tokens[currentTokenIndex]);
+                                consumeToken(SEMICOLON);
+                                cout << "Consumed SEMICOLON" << endl;
+                                return;
+                            }
                         }
                     }
                 }
             }
         }
-    }
 }
 
 
@@ -733,6 +729,25 @@ void RecursiveDescentParser::numericalExpression() {
         cout << "Consumed L_PAREN" << endl;
 
         numericalOperand();
+
+        if (tokens[currentTokenIndex].getType() == BOOLEAN_EQUAL) {
+            insertNode(tokens[currentTokenIndex]);
+            consumeToken(BOOLEAN_EQUAL);
+            cout << "Consumed BOOLEAN_EQUAL" << endl;
+
+            if (tokens[currentTokenIndex].getType() == INTEGER) {
+                insertNode(tokens[currentTokenIndex]);
+                consumeToken(INTEGER);
+                cout << "Consumed INTEGER" << endl;
+
+                if (tokens[currentTokenIndex].getType() == R_PAREN) {
+                    insertNode(tokens[currentTokenIndex]);
+                    consumeToken(R_PAREN);
+                    cout << "Consumed R_PAREN" << endl;
+                    return;
+                }
+            }
+        }
 
         if (tokens[currentTokenIndex].getType() == R_PAREN) {
             insertNode(tokens[currentTokenIndex]);
@@ -862,10 +877,12 @@ void RecursiveDescentParser::userDefinedFunction() {
 }
 
 void RecursiveDescentParser::identifierAndIdentifierArrayParameterList() {
+    cout << "Entering identifierandidentifierarrayparameterlist" << endl;
     if (tokens[currentTokenIndex].getType() == IDENTIFIER) {
         insertNode(tokens[currentTokenIndex]);
         consumeToken(tokens[currentTokenIndex].getType());
         cout << "Consumed IDENTIFIER" << endl;
+
 
         if (tokens[currentTokenIndex].getType() == COMMA) {
             insertNode(tokens[currentTokenIndex]);
@@ -928,7 +945,9 @@ bool RecursiveDescentParser::checkNumericalOperator() {
         tokens[currentTokenIndex].getType() == MINUS ||
         tokens[currentTokenIndex].getType() == ASTERISK ||
         tokens[currentTokenIndex].getType() == DIVIDE ||
-        tokens[currentTokenIndex].getType() == MODULO) {
+        tokens[currentTokenIndex].getType() == MODULO ||
+        tokens[currentTokenIndex].getType() == LOGICAL_NOT) {
+        //tokens[currentTokenIndex].getType() == BOOLEAN_EQUAL) {
         return true;
     }
     return false;
@@ -950,7 +969,6 @@ bool RecursiveDescentParser::isRelationalExpression() {
 }
 
 void RecursiveDescentParser::booleanExpression() {
-
     if ((tokens[currentTokenIndex+1].getType() == BOOLEAN_EQUAL ||
         tokens[currentTokenIndex+1].getType() == LT_EQUAL ||
         tokens[currentTokenIndex+1].getType() == GT_EQUAL ||
@@ -968,8 +986,8 @@ void RecursiveDescentParser::booleanExpression() {
         insertNode(tokens[currentTokenIndex]);
         consumeToken(tokens[currentTokenIndex].getType());
         cout << "Consumed RELATIONAL_OPERATOR" << endl;
-            numericalExpression();
-    }
+        numericalExpression();
+        }
 
     if (tokens[currentTokenIndex].getType() == BOOLEAN_TRUE) {
         insertNode(tokens[currentTokenIndex]);
@@ -1005,11 +1023,11 @@ void RecursiveDescentParser::booleanExpression() {
 
         booleanExpression();
 
-            if (tokens[currentTokenIndex].getType() == R_PAREN) {
-                insertNode(tokens[currentTokenIndex]);
-                consumeToken(tokens[currentTokenIndex].getType());
-                cout << "Consumed R_PAREN" << endl;
-            }
+        if (tokens[currentTokenIndex].getType() == R_PAREN) {
+            insertNode(tokens[currentTokenIndex]);
+            consumeToken(tokens[currentTokenIndex].getType());
+            cout << "Consumed R_PAREN" << endl;
+        }
         }
 
 
@@ -1018,30 +1036,54 @@ void RecursiveDescentParser::booleanExpression() {
         consumeToken(L_PAREN);
         cout << "Consumed L_PAREN" << endl;
 
-        numericalOperand();
+        if (tokens[currentTokenIndex].getType() == LOGICAL_NOT) {
+            numericalOperand();
 
-            if (isRelationalExpression()) {
+            insertNode(tokens[currentTokenIndex]);
+            consumeToken(R_PAREN);
+        } else {
+            numericalOperand();
+        }
+
+        if (isRelationalExpression()) {
+            insertNode(tokens[currentTokenIndex]);
+            consumeToken(tokens[currentTokenIndex].getType());
+            cout << "Consumed RELATIONAL_OPERATOR" << endl;
+
+            numericalOperand();
+
+            if (tokens[currentTokenIndex].getType() == R_PAREN) {
                 insertNode(tokens[currentTokenIndex]);
-                consumeToken(tokens[currentTokenIndex].getType());
-                cout << "Consumed RELATIONAL_OPERATOR" << endl;
+                consumeToken(R_PAREN);
+                cout << "Consumed R_PAREN" << endl;
 
-                numericalOperand();
-
-                    if (tokens[currentTokenIndex].getType() == R_PAREN) {
-                        insertNode(tokens[currentTokenIndex]);
-                        consumeToken(R_PAREN);
-                        cout << "Consumed R_PAREN" << endl;
-
-                        if (tokens[currentTokenIndex].getType() == BOOLEAN_AND ||
-                            tokens[currentTokenIndex].getType() == BOOLEAN_OR) {
-                            insertNode(tokens[currentTokenIndex]);
-                            consumeToken(tokens[currentTokenIndex].getType());
-                            cout << "Consumed BOOLEAN_OPERATOR" << endl;
-                            booleanExpression();
-                            }
+                if (tokens[currentTokenIndex].getType() == BOOLEAN_AND ||
+                    tokens[currentTokenIndex].getType() == BOOLEAN_OR) {
+                    insertNode(tokens[currentTokenIndex]);
+                    consumeToken(tokens[currentTokenIndex].getType());
+                    cout << "Consumed BOOLEAN_OPERATOR" << endl;
+                    booleanExpression();
                     }
-                }
             }
+        }
+    }
+
+    if (tokens[currentTokenIndex].getType() == IDENTIFIER &&
+        tokens[currentTokenIndex+1].getType() == L_BRACKET) {
+        identifierAndIdentifierArrayParameterList();
+
+        if (tokens[currentTokenIndex].getType() == BOOLEAN_EQUAL) {
+            insertNode(tokens[currentTokenIndex]);
+            consumeToken(tokens[currentTokenIndex].getType());
+            cout << "Consumed BOOLEAN_OPERATOR" << endl;
+            cout << "Moving to numericalexpression" << endl;
+            numericalExpression();
+        }
+    }
+
+    if (tokens[currentTokenIndex].getType() == LOGICAL_NOT) {
+        numericalExpression();
+    }
 
     if (tokens[currentTokenIndex].getType() == IDENTIFIER) {
         insertNode(tokens[currentTokenIndex]);
@@ -1079,6 +1121,14 @@ void RecursiveDescentParser::numericalOperand() {
     if (tokens[currentTokenIndex].getType() == IDENTIFIER) {
         insertNode(tokens[currentTokenIndex]);
         consumeToken(IDENTIFIER);;
+    }
+
+    if (tokens[currentTokenIndex].getType() == LOGICAL_NOT) {
+        insertNode(tokens[currentTokenIndex]);
+        consumeToken(LOGICAL_NOT);;
+
+        insertNode(tokens[currentTokenIndex]);
+        consumeToken(tokens[currentTokenIndex].getType());
     }
 
     if (tokens[currentTokenIndex].getType() == IDENTIFIER &&
@@ -1242,6 +1292,30 @@ void RecursiveDescentParser::identifierArrayList() {
             consumeToken(L_BRACKET);
             cout << "Consumed L_BRACKET" << endl;
 
+            if (tokens[currentTokenIndex].getType() == INTEGER &&
+                stoi(tokens[currentTokenIndex].getValue()) < 0) {
+                cout << "syntax error: array size must be declared as a positive integer" << endl;
+                throw runtime_error("syntax error");
+            }
+
+            if (tokens[currentTokenIndex].getType() == PLUS &&
+                tokens[currentTokenIndex+1].getType() == INTEGER) {
+                insertNode(tokens[currentTokenIndex]);
+                consumeToken(PLUS);
+                cout << "Consumed PLUS" << endl;
+
+                insertNode(tokens[currentTokenIndex]);
+                consumeToken(INTEGER);
+                cout << "Consumed INTEGER" << endl;
+
+                if (tokens[currentTokenIndex].getType() == R_BRACKET) {
+                    insertNode(tokens[currentTokenIndex]);
+                    consumeToken(R_BRACKET);
+                    cout << "Consumed R_BRACKET" << endl;
+                    return;
+                }
+            }
+
             if (tokens[currentTokenIndex].getType() == INTEGER) {
                 insertNode(tokens[currentTokenIndex]);
                 consumeToken(INTEGER);
@@ -1274,6 +1348,11 @@ void RecursiveDescentParser::parameterList() {
         insertNode(tokens[currentTokenIndex]);
         consumeToken(tokens[currentTokenIndex].getType());
         cout << "Consumed DATATYPE_SPECIFIER" << endl;
+
+        if (tokens[currentTokenIndex].getType() == KEYWORD_INT) {
+            cout << "syntax error - cannot use int for the name of a variable!" << endl;
+            throw runtime_error("Syntax error");
+        }
         if (tokens[currentTokenIndex].getType() == IDENTIFIER &&
             tokens[currentTokenIndex + 1].getType() == L_BRACKET) {
             identifierAndIdentifierArrayParameterList();
@@ -1451,6 +1530,8 @@ bool RecursiveDescentParser::checkifNumericalExpression() {
 
 bool RecursiveDescentParser::checkifBooleanExpression() {
     if (tokens[currentTokenIndex].getType() == BOOLEAN_AND ||
+        tokens[currentTokenIndex].getType() == BOOLEAN_TRUE ||
+        tokens[currentTokenIndex].getType() == BOOLEAN_FALSE ||
                     tokens[currentTokenIndex].getType() == BOOLEAN_OR ||
                     tokens[currentTokenIndex].getType() == IDENTIFIER ||
                     (tokens[currentTokenIndex].getType() == L_PAREN &&
