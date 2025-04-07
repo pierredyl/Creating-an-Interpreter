@@ -36,6 +36,7 @@ bool RecursiveDescentParser::consumeToken(TokenType expectedType) {
 
 void RecursiveDescentParser::insertNode(Token currToken) {
     CSTNode* newNode = new CSTNode(currToken);
+    newNode->lineNumber = currToken.getLineNumber();
     if (newNode->token.getLineNumber() == currentNode->token.getLineNumber()) {
         currentNode->rightSibling = newNode;
         currentNode->leftChild = nullptr;
@@ -44,7 +45,6 @@ void RecursiveDescentParser::insertNode(Token currToken) {
         currentNode->rightSibling = nullptr;
     }
     currentNode = newNode;
-    currentNode->lineNumber = currentNode[currentTokenIndex].token.getLineNumber();
 }
 
 RecursiveDescentParser::CSTNode* RecursiveDescentParser::getRoot() const {
