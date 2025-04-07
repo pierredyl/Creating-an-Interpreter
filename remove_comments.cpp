@@ -67,7 +67,9 @@ void remove_comments(ifstream& inputFile, ofstream& outputFile) {
                     currentState = S4;
                     lineBuffer[lineBuffer.size() - 1] = ' ';
                 } else {
-                    lineBuffer[lineBuffer.size() - 1] = ' ';
+                    if (!lineBuffer.empty()) {
+                        lineBuffer[lineBuffer.size() - 1] = ' ';
+                    }
                 }
                 break;
 
