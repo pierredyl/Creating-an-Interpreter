@@ -14,4 +14,6 @@ add_executable(Creating_an_Interpreter
         Tokenizer.cpp
         Token.cpp
         RecursiveDescentParser.h
-        RecursiveDescentParser.cpp)
+        RecursiveDescentParser.cpp
+        SymbolTable.h
+        SymbolTable.cpp)

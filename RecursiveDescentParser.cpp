@@ -44,6 +44,11 @@ void RecursiveDescentParser::insertNode(Token currToken) {
         currentNode->rightSibling = nullptr;
     }
     currentNode = newNode;
+    currentNode->lineNumber = currentNode[currentTokenIndex].token.getLineNumber();
+}
+
+RecursiveDescentParser::CSTNode* RecursiveDescentParser::getRoot() const {
+    return Root;
 }
 
 void RecursiveDescentParser::parseProgram() {
@@ -782,6 +787,13 @@ void RecursiveDescentParser::numericalExpression() {
 
     numericalOperand();
 
+    if (tokens[currentTokenIndex].getType() == COMMA) {
+        insertNode(tokens[currentTokenIndex]);
+        consumeToken(COMMA);
+        cout << "Consumed Comma" << endl;
+        numericalExpression();
+    }
+
     if (checkNumericalOperator() && tokens[currentTokenIndex].getType() != L_PAREN) {
         insertNode(tokens[currentTokenIndex]);
         consumeToken(tokens[currentTokenIndex].getType());
@@ -888,7 +900,11 @@ void RecursiveDescentParser::identifierAndIdentifierArrayParameterList() {
             insertNode(tokens[currentTokenIndex]);
             consumeToken(tokens[currentTokenIndex].getType());
             cout << "Consumed COMMA" << endl;
-            identifierAndIdentifierArrayParameterList();
+            if (isDatatypeSpecifier()) {
+                parameterList();
+            } else {
+                identifierAndIdentifierArrayParameterList();
+            }
         }
 
 
@@ -1354,8 +1370,15 @@ void RecursiveDescentParser::parameterList() {
             throw runtime_error("Syntax error");
         }
         if (tokens[currentTokenIndex].getType() == IDENTIFIER &&
-            tokens[currentTokenIndex + 1].getType() == L_BRACKET) {
+            tokens[currentTokenIndex + 1].getType() == L_BRACKET ||
+            tokens[currentTokenIndex + 1].getType() == COMMA) {
             identifierAndIdentifierArrayParameterList();
+            if (tokens[currentTokenIndex].getType() == COMMA) {
+                insertNode(tokens[currentTokenIndex]);
+                consumeToken(COMMA);
+                cout << "Consumed Comma" << endl;
+                parameterList();
+            }
         } else {
             insertNode(tokens[currentTokenIndex]);
             consumeToken(IDENTIFIER);
@@ -1366,8 +1389,6 @@ void RecursiveDescentParser::parameterList() {
             }
         }
     }
-
-
 }
 
 void RecursiveDescentParser::procedureState() {
@@ -1378,7 +1399,6 @@ void RecursiveDescentParser::procedureState() {
         cout << "Consumed KEYWORD_PROCEDURE" << endl;
     }
 
-    //<IDENTIFIER> <L_PAREN> void <R_PAREN> < L_BRACE> <COMPOUND_STATEMENT > < R_BRACE>
     if (tokens[currentTokenIndex].getType() == IDENTIFIER &&
         tokens[currentTokenIndex+1].getType() == L_PAREN &&
         tokens[currentTokenIndex+2].getType() == KEYWORD_VOID) {
@@ -1393,6 +1413,12 @@ void RecursiveDescentParser::procedureState() {
         insertNode(tokens[currentTokenIndex]);
         consumeToken(KEYWORD_VOID);
         cout << "Consumed KEYWORD_VOID" << endl;
+
+        if (tokens[currentTokenIndex].getType() == R_PAREN) {
+            insertNode(tokens[currentTokenIndex]);
+            consumeToken(R_PAREN);
+            cout << "Consumed R_PAREN" << endl;
+        }
 
         if (tokens[currentTokenIndex].getType() == L_BRACE) {
             insertNode(tokens[currentTokenIndex]);

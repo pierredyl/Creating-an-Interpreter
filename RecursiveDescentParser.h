@@ -10,17 +10,16 @@ using namespace std;
 #ifndef RECURSIVEDESCENTPARSER_H
 #define RECURSIVEDESCENTPARSER_H
 
+class SymbolTable; // Forward declaration of SymbolTable
 
 
 class RecursiveDescentParser {
-
-
-
 private:
   struct CSTNode {
     Token token;
     CSTNode* leftChild;
     CSTNode* rightSibling;
+    int lineNumber = 0;
 
     CSTNode(Token t) : token(t), leftChild(nullptr), rightSibling(nullptr) {}
     CSTNode(Token t, CSTNode* left, CSTNode* right)
@@ -37,9 +36,14 @@ private:
 
 
 public:
+  friend class SymbolTable;
+
   RecursiveDescentParser(const vector<Token>& tokens);
   bool consumeToken(TokenType expectedType);
   void insertNode(Token currToken);
+
+  CSTNode *getRoot() const;
+
   void parseProgram();
   void functionDeclaration();
   void compoundStatement();
@@ -56,21 +60,15 @@ public:
   bool checkNumericalOperator();
 
   bool isRelationalExpression();
-
   void initializationExpression();
-
   void iterationStatement();
-
   void iterationAssignment();
-
   void returnStatement();
   void expression();
   void printfStatement();
   void assignmentStatement();
   void numericalExpression();
-
   bool isIdentifierArrayParameterList();
-
   void userDefinedFunction();
 
   void identifierAndIdentifierArrayParameterList();

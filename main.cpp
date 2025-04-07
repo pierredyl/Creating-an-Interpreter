@@ -1,10 +1,12 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
+#include <cstdlib>
 #include "remove_comments.h"
 #include "Token.h"
 #include "Tokenizer.h"
 #include "RecursiveDescentParser.h"
+#include "SymbolTable.h"
 
 using namespace std;
 
@@ -53,16 +55,25 @@ int main() {
     Tokenizer tokenizer(code);
     vector<Token> tokens = tokenizer.tokenize();
 
+    /*
     // Print out all tokens
     for (const Token& token : tokens) {
         cout << "Token Value: " << token.getValue() << ", Type: " << token.typeToString(token.getType()) << endl;
     }
 
     cout << "\n\n";
+    */
 
     // Pass tokens to Parser
-    RecursiveDescentParser parser(tokens);
-    parser.printCST();
+    RecursiveDescentParser SyntaxTree(tokens);
+    cout << "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n";
+    SyntaxTree.printCST();
+
+    //Symbol Table
+    SymbolTable symbolTable(SyntaxTree);
+    symbolTable.buildSymbolTable();
+    cout << "\n\n";
+    symbolTable.printTable();
 
     return 0;
 }
