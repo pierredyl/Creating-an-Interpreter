@@ -2,6 +2,8 @@
 #include <fstream>
 #include <sstream>
 #include <cstdlib>
+
+#include "AbstractSyntaxTree.h"
 #include "remove_comments.h"
 #include "Token.h"
 #include "Tokenizer.h"
@@ -51,7 +53,7 @@ int main() {
     string code = buffer.str();
     inputFile.close(); // Close the output file after reading
 
-    // Tokenizer
+    // Tokenize
     Tokenizer tokenizer(code);
     vector<Token> tokens = tokenizer.tokenize();
 
@@ -64,16 +66,23 @@ int main() {
     cout << "\n\n";
     */
 
-    // Pass tokens to Parser
-    RecursiveDescentParser SyntaxTree(tokens);
+    //Concrete Syntax Tree
+    RecursiveDescentParser ConcreteSyntaxTree(tokens);
     cout << "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n";
-    SyntaxTree.printCST();
+    cout << "CST: " << endl;
+    ConcreteSyntaxTree.printCST();
 
     //Symbol Table
-    SymbolTable symbolTable(SyntaxTree);
+    SymbolTable symbolTable(ConcreteSyntaxTree);
     symbolTable.buildSymbolTable();
     cout << "\n\n";
-    symbolTable.printTable();
+   // symbolTable.printTable();
+
+    //Abstract Syntax Tree
+    AbstractSyntaxTree abstractSyntaxTree(ConcreteSyntaxTree);
+    abstractSyntaxTree.buildAST();
+    cout << "AST: " << endl;
+    abstractSyntaxTree.printAST();
 
     return 0;
 }

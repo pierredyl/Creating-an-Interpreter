@@ -16,4 +16,6 @@ add_executable(Creating_an_Interpreter
         RecursiveDescentParser.h
         RecursiveDescentParser.cpp
         SymbolTable.h
-        SymbolTable.cpp)
+        SymbolTable.cpp
+        AbstractSyntaxTree.h
+        AbstractSyntaxTree.cpp)

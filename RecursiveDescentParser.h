@@ -11,6 +11,7 @@ using namespace std;
 #define RECURSIVEDESCENTPARSER_H
 
 class SymbolTable; // Forward declaration of SymbolTable
+class AbstractSyntaxTree; //Foward declaration of AST
 
 
 class RecursiveDescentParser {
@@ -37,6 +38,7 @@ private:
 
 public:
   friend class SymbolTable;
+  friend class AbstractSyntaxTree;
 
   RecursiveDescentParser(const vector<Token>& tokens);
   bool consumeToken(TokenType expectedType);
