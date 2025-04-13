@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.29)
+cmake_minimum_required(VERSION 3.27)
 project(Creating_an_Interpreter)
 
 set(CMAKE_CXX_STANDARD 14)
@@ -9,7 +9,7 @@ add_executable(Creating_an_Interpreter
     main.cpp
     remove_comments.cpp
     remove_comments.h
-        token.h
+        Token.h
         Tokenizer.h
         Tokenizer.cpp
         Token.cpp
