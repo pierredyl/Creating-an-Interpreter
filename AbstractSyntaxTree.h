@@ -10,23 +10,29 @@
 
 #include "Token.h"
 #include "RecursiveDescentParser.h"
+#include "SymbolTable.h"
 using namespace std;
+
 
 class AbstractSyntaxTree {
 private:
     struct ASTNode {
-        Token token;
+        SymbolTable::Symbol* symbolPointer;
+        string type;
+        string typeName;
         ASTNode* leftChild;
         ASTNode* rightSibling;
         int lineNumber = 0;
         string name;
 
         ASTNode(string name) : leftChild(nullptr), rightSibling(nullptr), name(name) {}
-        ASTNode(Token t, ASTNode* left, ASTNode* right)
-            : token(t), leftChild(left), rightSibling(right) {}
+        ASTNode(string name, string type, string typeName) : leftChild(nullptr), rightSibling(nullptr), name(name),
+        type(type), typeName(typeName)
+        {}
     };
 
     RecursiveDescentParser::CSTNode* CSTRoot;
+    SymbolTable::Symbol* currentSymbolPointer;
     ASTNode* ASTRoot = nullptr;
     ASTNode* currentASTNode = nullptr;
     bool insideFuncDeclaration = false;
@@ -38,17 +44,27 @@ private:
     bool inForStatement3 = false;
     int parenDepth = -1;
 
-    void insertNode(RecursiveDescentParser::CSTNode* node, string name);
+    void insertNode(RecursiveDescentParser::CSTNode *currentCSTNode, string name, string type, string typeName);
     void printASTHelper(ASTNode *node, bool isLeftChild) const;
     void BuildASTHelper(RecursiveDescentParser::CSTNode* CSTRoot);
 
 public:
+    friend class SymbolTable;
     static const unordered_map<TokenType, string, int> typeMap;
 
     AbstractSyntaxTree(RecursiveDescentParser& CST);
+
+    AbstractSyntaxTree(RecursiveDescentParser &CST, SymbolTable &ST);
+
     void printAST() const;
+
+    void linkASTandSymbolTable();
+
     void buildAST();
 
+    void testLinking();
+
+    void printSymbolTableForDeclaration(SymbolTable::Symbol* s);
 
 };
 

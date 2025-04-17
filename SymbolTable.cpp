@@ -17,8 +17,14 @@ SymbolTable::SymbolTable(RecursiveDescentParser& parser) {
 void SymbolTable::insertSymbol(std::string name, std::string type, std::string dtype, int scope, bool isArray, int arrSize, int lineNumber) {
     checkForDuplicate(name, scope, lineNumber);
     Symbol* newSymbol = new Symbol(name, type, dtype, scope, isArray, arrSize, lineNumber);
-    newSymbol->next = head;
-    head = newSymbol;
+
+    if (head == nullptr) {
+        head = newSymbol;
+        currentSymbol = newSymbol;
+    } else {
+        currentSymbol->next = newSymbol;
+        currentSymbol = newSymbol;
+    }
 }
 
 void SymbolTable::checkForDuplicate(const string& identifierName, int scope, int currentLineNumber) {
@@ -133,6 +139,7 @@ void SymbolTable::printTable() {
         temp = temp->next;
     }
 }
+
 void SymbolTable::buildSymbolTableHelper(RecursiveDescentParser::CSTNode* node) {
     if (node == nullptr) {
         return; // Base case: if the node is null, return.
@@ -251,6 +258,9 @@ void SymbolTable::buildSymbolTable() {
     }
 }
 
+SymbolTable::Symbol* SymbolTable::getHead() {
+    return head;
+}
 
 
 

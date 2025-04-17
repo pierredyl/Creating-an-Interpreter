@@ -7,6 +7,8 @@ using namespace std;
 
 #ifndef SYMBOLTABLE_H
 #define SYMBOLTABLE_H
+class AbstractSyntaxTree;
+
 
 class SymbolTable {
 
@@ -23,10 +25,13 @@ private:
 
         // Constructor
         Symbol(string name, string type, string dtype, int scp, bool arr = false, int arrSize = 0, int lineNumber = -1)
-            : identifierName(name), identifierType(type), dataType(dtype), scope(scp), isArray(arr), arraySize(arrSize), symbolLineNumber(lineNumber), next(nullptr) {}
+            : identifierName(name), identifierType(type), dataType(dtype), scope(scp), isArray(arr),
+        arraySize(arrSize), symbolLineNumber(lineNumber), next(nullptr) {}
     };
 
+
     Symbol* head;  // Head of the linked list
+    Symbol* currentSymbol;
     RecursiveDescentParser::CSTNode* Root;
     int lineNumber = 0;
     void buildSymbolTableHelper(RecursiveDescentParser::CSTNode *node);
@@ -35,6 +40,7 @@ private:
     int depth = 0;
 
 public:
+    friend class AbstractSyntaxTree;
     // Constructor
     SymbolTable(RecursiveDescentParser& SyntaxTree);
 
@@ -65,6 +71,8 @@ public:
     void printTable();
 
     void buildSymbolTable();
+
+    Symbol* getHead();
 
 };
 

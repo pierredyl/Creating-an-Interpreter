@@ -69,20 +69,22 @@ int main() {
     //Concrete Syntax Tree
     RecursiveDescentParser ConcreteSyntaxTree(tokens);
     cout << "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n";
-    cout << "CST: " << endl;
-    ConcreteSyntaxTree.printCST();
+    //cout << "CST: " << endl;
+    //ConcreteSyntaxTree.printCST();
 
     //Symbol Table
     SymbolTable symbolTable(ConcreteSyntaxTree);
     symbolTable.buildSymbolTable();
-    cout << "\n\n";
-   // symbolTable.printTable();
+    //cout << "\n\n";
+    //symbolTable.printTable();
 
     //Abstract Syntax Tree
-    AbstractSyntaxTree abstractSyntaxTree(ConcreteSyntaxTree);
+    AbstractSyntaxTree abstractSyntaxTree(ConcreteSyntaxTree, symbolTable);
     abstractSyntaxTree.buildAST();
     cout << "AST: " << endl;
     abstractSyntaxTree.printAST();
+    //abstractSyntaxTree.linkASTandSymbolTable();
+    //abstractSyntaxTree.testLinking();
 
     return 0;
 }

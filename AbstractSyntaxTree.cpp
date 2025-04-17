@@ -17,8 +17,9 @@ using namespace std;
 
 
 
-AbstractSyntaxTree::AbstractSyntaxTree(RecursiveDescentParser& CST) {
+AbstractSyntaxTree::AbstractSyntaxTree(RecursiveDescentParser& CST, SymbolTable& ST) {
     this->CSTRoot = CST.getRoot();
+    this->currentSymbolPointer = ST.getHead();
 };
 
 bool isNegativeNumber(const string& token) {
@@ -111,6 +112,15 @@ void AbstractSyntaxTree::printASTHelper(ASTNode* node, bool isLeftChild) const {
         cout << "v\n";
     }
 
+    /*
+    if (node->name == "DECLARATION") {
+        cout << node->name << ", " << node->type << ": " << node->typeName;
+    }
+    else {
+        cout << node->name;
+    }
+    */
+
     cout << node->name;
 
     if (node->rightSibling != nullptr) {
@@ -128,8 +138,9 @@ void AbstractSyntaxTree::printASTHelper(ASTNode* node, bool isLeftChild) const {
     }
 }
 
-void AbstractSyntaxTree::insertNode(RecursiveDescentParser::CSTNode* currentCSTNode, string name) {
-    ASTNode* newNode = new ASTNode(name);
+void AbstractSyntaxTree::insertNode(RecursiveDescentParser::CSTNode* currentCSTNode, string name, string type,
+    string typeName) {
+    ASTNode* newNode = new ASTNode(name, type, typeName);
 
     if (ASTRoot == nullptr) {
         ASTRoot = newNode;
@@ -164,14 +175,102 @@ void AbstractSyntaxTree::insertNode(RecursiveDescentParser::CSTNode* currentCSTN
     }
     currentASTNode = newNode;
 }
+void AbstractSyntaxTree::printSymbolTableForDeclaration(SymbolTable::Symbol* s) {
+    std::cout << "IDENTIFIER_NAME: " << s->identifierName << "\n";
+    std::cout << "IDENTIFIER_TYPE: " << s->identifierType << "\n";
+    std::cout << "DATATYPE: " << s->dataType << "\n";
+    std::cout << "DATATYPE_IS_ARRAY: " << (s->isArray ? "yes" : "no") << "\n";
+    std::cout << "DATATYPE_ARRAY_SIZE: " << s->arraySize << "\n";
+    std::cout << "SCOPE: " << s->scope << "\n\n";
+}
 
 void AbstractSyntaxTree::buildAST() {
     if (CSTRoot != nullptr) {
         BuildASTHelper(CSTRoot);  // Call the helper function to traverse the tree
     }
+
+}
+
+void AbstractSyntaxTree::testLinking() {
+    cout << "Testing Symbol Table and AST Linking\n\n" << endl;
+
+    ASTNode* node = ASTRoot;
+
+    while (node != nullptr && currentSymbolPointer != nullptr) {
+        if (node->name == "DECLARATION") {
+            cout << "Declaring: " << node->typeName << ", which is a " << node->type << "." << endl;
+            cout << "Symbol Table for " << node->typeName << ": " << endl;
+            printSymbolTableForDeclaration(node->symbolPointer);
+
+            if (node->rightSibling == nullptr) {
+                node = node->leftChild;
+            } else if (node->leftChild == nullptr) {
+                node = node->rightSibling;
+            } else {
+                break;
+            }
+
+        } else {
+            if (node->rightSibling == nullptr) {
+                node = node->leftChild;
+            } else if (node->leftChild == nullptr) {
+                node = node->rightSibling;
+            } else {
+                break;
+            }
+        }
+
+    }
+}
+
+
+void AbstractSyntaxTree::linkASTandSymbolTable() {
+    ASTNode* node = ASTRoot;
+    while (node != nullptr) {
+        if (node->name == "DECLARATION") {
+            string type = node->type;
+            string typeName = node->typeName;
+            cout << "attempting to link: " << typeName << " " << type << " to " <<
+                currentSymbolPointer->identifierName << " " << currentSymbolPointer->identifierType << "." << endl;
+            if (currentSymbolPointer->identifierName == typeName) {
+                node->symbolPointer = currentSymbolPointer;
+                cout << "Just Linked: " << typeName << " in the AST to " << currentSymbolPointer->identifierName
+                << " in the Symbol Table" << endl;
+                if (currentSymbolPointer->next != nullptr) {
+                    currentSymbolPointer = currentSymbolPointer->next;
+                } else if (currentSymbolPointer->next == nullptr) {
+                    break;
+                }
+
+                while (currentSymbolPointer->identifierType == "parameter" && currentSymbolPointer->next != nullptr) {
+                    currentSymbolPointer = currentSymbolPointer->next;
+                }
+                }
+
+            if (node->rightSibling == nullptr) {
+                node = node->leftChild;
+            } else if (node->leftChild == nullptr) {
+                node = node->rightSibling;
+            } else {
+                break;
+            }
+
+        } else {
+
+            if (node->rightSibling != nullptr) {
+                node = node->rightSibling;
+            } else if (node->rightSibling == nullptr && node->leftChild != nullptr) {
+                node = node->leftChild;
+            } else {
+                break;
+            }
+        }
+    }
 }
 
 void AbstractSyntaxTree::BuildASTHelper(RecursiveDescentParser::CSTNode* currentCSTNode) {
+    string typeName;
+
     if (currentCSTNode == nullptr) {
         return;
     }
@@ -190,45 +289,56 @@ void AbstractSyntaxTree::BuildASTHelper(RecursiveDescentParser::CSTNode* current
 
     //Function or Procedure Declaration
     if (tokenValue == "function" || tokenValue == "procedure") {
-        insertNode(currentCSTNode, "DECLARATION");
+        if (currentCSTNode->rightSibling->token.getValue() == "main") {
+            insertNode(currentCSTNode, "DECLARATION", "procedure", "main");
+        } else if (tokenValue == "procedure" && currentCSTNode->rightSibling->token.getType() == IDENTIFIER) {
+            typeName = currentCSTNode->rightSibling->token.getValue();
+            insertNode(currentCSTNode, "DECLARATION", "procedure", typeName);
+        } else {
+            typeName = currentCSTNode->rightSibling->rightSibling->token.getValue();
+            insertNode(currentCSTNode, "DECLARATION", "function", typeName);
+        }
         insideFuncDeclaration = true;
+
     } else if (tokenType == IDENTIFIER && currentCSTNode->rightSibling->token.getValue() == "(" && !insideFuncDeclaration) {
-        insertNode(currentCSTNode, "CALL");
-        insertNode(currentCSTNode, currentCSTNode->token.getValue());
+        insertNode(currentCSTNode, "CALL", "N/A", "N/A");
+        insertNode(currentCSTNode, currentCSTNode->token.getValue(), "N/A", "N/A");
         currentCSTNode = currentCSTNode->rightSibling;
-        insertNode(currentCSTNode, currentCSTNode->token.getValue());
+        insertNode(currentCSTNode, currentCSTNode->token.getValue(), "N/A", "N/A");
         currentCSTNode = currentCSTNode->rightSibling;
-        insertNode(currentCSTNode, currentCSTNode->token.getValue());
+        insertNode(currentCSTNode, currentCSTNode->token.getValue(), "N/A", "N/A");
         currentCSTNode = currentCSTNode->rightSibling;
-        insertNode(currentCSTNode, currentCSTNode->token.getValue());
+        insertNode(currentCSTNode, currentCSTNode->token.getValue(), "N/A", "N/A");
 
 
     //Variable Declaration
     } else if ((tokenValue == "int" || tokenValue == "char" || tokenValue == "bool")  && !insideFuncDeclaration &&
         !inForStatement) {
         inStatement = true;
-        insertNode(currentCSTNode, "DECLARATION");
+        typeName = currentCSTNode->rightSibling->token.getValue();
+        insertNode(currentCSTNode, "DECLARATION", "variable", typeName);
         if (currentCSTNode->rightSibling->rightSibling->token.getValue() == ",") {
             inVariableList = true;
             currentCSTNode = currentCSTNode->rightSibling;
         }
     } else if (inVariableList && tokenType == IDENTIFIER && !inForStatement) {
-        insertNode(currentCSTNode, "DECLARATION");
+        typeName = currentCSTNode->token.getValue();
+        insertNode(currentCSTNode, "DECLARATION", "variable", typeName);
 
     //Begin Block '{'
     } else if (tokenValue == "{") {
-        insertNode(currentCSTNode, "BEGIN BLOCK");
+        insertNode(currentCSTNode, "BEGIN BLOCK", "N/A", "N/A");
 
     //End Blcok '}'
     } else if (tokenValue == "}") {
-        insertNode(currentCSTNode, "END BLOCK");
+        insertNode(currentCSTNode, "END BLOCK", "N/A", "N/A");
 
     //Assignment
     } else if (tokenType == IDENTIFIER && !insideFuncDeclaration && !inStatement && !inForStatement && !inForStatement2 &&
         !inForStatement3) {
         inStatement = true;
         deque<string> expression;
-        insertNode(currentCSTNode, "ASSIGNMENT");
+        insertNode(currentCSTNode, "ASSIGNMENT", "N/A", "N/A");
 
         while (tokenValue != ";") {
             expression.push_back(tokenValue);
@@ -238,7 +348,7 @@ void AbstractSyntaxTree::BuildASTHelper(RecursiveDescentParser::CSTNode* current
         expression = infixToPostfix(expression);
 
         for (auto it = expression.begin(); it != expression.end(); it++) {
-            insertNode(currentCSTNode, *it);
+            insertNode(currentCSTNode, *it, "N/A", "N/A");
         }
         inStatement = false;
 
@@ -276,7 +386,7 @@ void AbstractSyntaxTree::BuildASTHelper(RecursiveDescentParser::CSTNode* current
         expression = infixToPostfix(expression);
 
         for (auto it = expression.begin(); it != expression.end(); it++) {
-            insertNode(currentCSTNode, *it);
+            insertNode(currentCSTNode, *it, "N/A", "N/A");
         }
 
         inIfStatement = false;
@@ -285,12 +395,12 @@ void AbstractSyntaxTree::BuildASTHelper(RecursiveDescentParser::CSTNode* current
 
     //else
     } else if (tokenValue == "else") {
-        insertNode(currentCSTNode, "ELSE");
+        insertNode(currentCSTNode, "ELSE", "N/A", "N/A");
 
     //Return Statement
     } else if (tokenValue == "return") {
         deque<string> expression;
-        insertNode(currentCSTNode, "RETURN");
+        insertNode(currentCSTNode, "RETURN", "N/A", "N/A");
 
         while (tokenValue != ";") {
             if (tokenValue != "return" && tokenValue != ")" && tokenValue != "(") {
@@ -303,7 +413,7 @@ void AbstractSyntaxTree::BuildASTHelper(RecursiveDescentParser::CSTNode* current
         expression = infixToPostfix(expression);
 
         for (auto it = expression.begin(); it != expression.end(); it++) {
-            insertNode(currentCSTNode, *it);
+            insertNode(currentCSTNode, *it, "N/A", "N/A");
         }
         inStatement = false;
 
@@ -311,12 +421,12 @@ void AbstractSyntaxTree::BuildASTHelper(RecursiveDescentParser::CSTNode* current
 
     //printf
     } else if (tokenValue == "printf") {
-        insertNode(currentCSTNode, "PRINTF");
+        insertNode(currentCSTNode, "PRINTF", "N/A", "N/A");
         currentCSTNode = currentCSTNode->rightSibling;
         tokenValue = currentCSTNode->token.getValue();
         while (tokenValue != ";") {
             if (tokenValue != "," && tokenValue != "(" && tokenValue != ")" && tokenValue != "\"") {
-                insertNode(currentCSTNode, tokenValue);
+                insertNode(currentCSTNode, tokenValue, "N/A", "N/A");
                 currentCSTNode = currentCSTNode->rightSibling;
                 tokenValue = currentCSTNode->token.getValue();
             } else {
@@ -329,7 +439,7 @@ void AbstractSyntaxTree::BuildASTHelper(RecursiveDescentParser::CSTNode* current
     } else if (tokenValue == "for") {
         inForStatement = true;
         deque<string> expression1;
-        insertNode(currentCSTNode, "FOR EXPRESSION 1");
+        insertNode(currentCSTNode, "FOR EXPRESSION 1", "N/A", "N/A");
 
         while (tokenValue != ";") {
             if (tokenValue != "(" && tokenValue != ")" && tokenValue != "for") {
@@ -345,11 +455,11 @@ void AbstractSyntaxTree::BuildASTHelper(RecursiveDescentParser::CSTNode* current
         inForStatement = false;
         expression1 = infixToPostfix(expression1);
         for (auto it = expression1.begin(); it != expression1.end(); it++) {
-            insertNode(currentCSTNode, *it);
+            insertNode(currentCSTNode, *it, "N/A", "N/A");
         }
     } else if (inForStatement2) {
         deque<string> expression2;
-        insertNode(currentCSTNode, "FOR EXPRESSION 2");
+        insertNode(currentCSTNode, "FOR EXPRESSION 2", "N/A", "N/A");
 
         while (tokenValue != ";") {
             if (tokenValue != "(" && tokenValue != ")") {
@@ -365,11 +475,11 @@ void AbstractSyntaxTree::BuildASTHelper(RecursiveDescentParser::CSTNode* current
         inForStatement3 = true;
         expression2 = infixToPostfix(expression2);
         for (auto it = expression2.begin(); it != expression2.end(); it++) {
-            insertNode(currentCSTNode, *it);
+            insertNode(currentCSTNode, *it, "N/A", "N/A");
         }
     } else if (inForStatement3) {
         deque<string> expression3;
-        insertNode(currentCSTNode, "FOR EXPRESSION 3");
+        insertNode(currentCSTNode, "FOR EXPRESSION 3", "N/A", "N/A");
         parenDepth = 1;
         while (parenDepth > 0) {
             if (tokenValue == ")") {
@@ -387,13 +497,13 @@ void AbstractSyntaxTree::BuildASTHelper(RecursiveDescentParser::CSTNode* current
         inForStatement3 = false;
         expression3 = infixToPostfix(expression3);
         for (auto it = expression3.begin(); it != expression3.end(); it++) {
-            insertNode(currentCSTNode, *it);
+            insertNode(currentCSTNode, *it, "N/A", "N/A");
         }
         inStatement = false;
 
     //While Loop
     } else if (tokenValue == "while") {
-        insertNode(currentCSTNode, "WHILE");
+        insertNode(currentCSTNode, "WHILE", "N/A", "N/A");
         deque<string> expression;
         parenDepth = 1;
         while (parenDepth > 0) {
@@ -414,7 +524,7 @@ void AbstractSyntaxTree::BuildASTHelper(RecursiveDescentParser::CSTNode* current
 
         expression = infixToPostfix(expression);
         for (auto it = expression.begin(); it != expression.end(); it++) {
-            insertNode(currentCSTNode, *it);
+            insertNode(currentCSTNode, *it, "N/A", "N/A");
         }
     }
 
