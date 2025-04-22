@@ -22,6 +22,10 @@ AbstractSyntaxTree::AbstractSyntaxTree(RecursiveDescentParser& CST, SymbolTable&
     this->currentSymbolPointer = ST.getHead();
 };
 
+AbstractSyntaxTree::ASTNode* AbstractSyntaxTree::getRoot() {
+    return ASTRoot;
+}
+
 bool isNegativeNumber(const string& token) {
     // Check if the token starts with a '-' and the rest is a digit
     if (token[0] == '-' && token.length() > 1 && isdigit(token[1])) {
@@ -268,6 +272,21 @@ void AbstractSyntaxTree::linkASTandSymbolTable() {
     }
 }
 
+bool isNumber(const std::string& str) {
+    // Check if the string is empty
+    if (str.empty()) return false;
+
+    // Iterate through each character in the string
+    for (char ch : str) {
+        if (!std::isdigit(ch)) {
+            return false;  // If any character is not a digit, it's not a number
+        }
+    }
+
+    return true;  // All characters are digits, so it's a valid number
+}
+
+
 void AbstractSyntaxTree::BuildASTHelper(RecursiveDescentParser::CSTNode* currentCSTNode) {
     string typeName;
 
@@ -339,7 +358,6 @@ void AbstractSyntaxTree::BuildASTHelper(RecursiveDescentParser::CSTNode* current
         inStatement = true;
         deque<string> expression;
         insertNode(currentCSTNode, "ASSIGNMENT", "N/A", "N/A");
-
         while (tokenValue != ";") {
             expression.push_back(tokenValue);
             currentCSTNode = currentCSTNode->rightSibling;
@@ -348,7 +366,11 @@ void AbstractSyntaxTree::BuildASTHelper(RecursiveDescentParser::CSTNode* current
         expression = infixToPostfix(expression);
 
         for (auto it = expression.begin(); it != expression.end(); it++) {
-            insertNode(currentCSTNode, *it, "N/A", "N/A");
+            if (isNumber(*it)) {
+                insertNode(currentCSTNode, *it, "N/A", "N/A");
+            } else {
+                insertNode(currentCSTNode, *it, "variable", "N/A");
+            }
         }
         inStatement = false;
 

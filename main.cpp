@@ -4,6 +4,7 @@
 #include <cstdlib>
 
 #include "AbstractSyntaxTree.h"
+#include "Interpreter.h"
 #include "remove_comments.h"
 #include "Token.h"
 #include "Tokenizer.h"
@@ -85,6 +86,10 @@ int main() {
     abstractSyntaxTree.printAST();
     //abstractSyntaxTree.linkASTandSymbolTable();
     //abstractSyntaxTree.testLinking();
+
+    //cout << "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n";
+    //Interpreter program(abstractSyntaxTree, symbolTable);
+    //program.interpret();
 
     return 0;
 }

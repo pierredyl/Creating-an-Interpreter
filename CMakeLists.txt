@@ -18,4 +18,6 @@ add_executable(Creating_an_Interpreter
         SymbolTable.h
         SymbolTable.cpp
         AbstractSyntaxTree.h
-        AbstractSyntaxTree.cpp)
+        AbstractSyntaxTree.cpp
+        Interpreter.h
+        Interpreter.cpp)

@@ -8,6 +8,7 @@ using namespace std;
 #ifndef SYMBOLTABLE_H
 #define SYMBOLTABLE_H
 class AbstractSyntaxTree;
+class Interpreter;
 
 
 class SymbolTable {
@@ -21,12 +22,14 @@ private:
         int arraySize;
         int scope;
         int symbolLineNumber;
+        int currentValue;
         Symbol* next;
 
         // Constructor
         Symbol(string name, string type, string dtype, int scp, bool arr = false, int arrSize = 0, int lineNumber = -1)
             : identifierName(name), identifierType(type), dataType(dtype), scope(scp), isArray(arr),
-        arraySize(arrSize), symbolLineNumber(lineNumber), next(nullptr) {}
+        arraySize(arrSize), symbolLineNumber(lineNumber), next(nullptr), currentValue(0) {}
+
     };
 
 
@@ -35,14 +38,21 @@ private:
     RecursiveDescentParser::CSTNode* Root;
     int lineNumber = 0;
     void buildSymbolTableHelper(RecursiveDescentParser::CSTNode *node);
+
     int globalScope;
     bool inFuncOrProc = false;
     int depth = 0;
 
 public:
     friend class AbstractSyntaxTree;
+    friend class Interpreter;
     // Constructor
     SymbolTable(RecursiveDescentParser& SyntaxTree);
+
+
+    static Symbol* findSymbol(Symbol* symbolRoot, const std::string& identifierName, int scope);
+
+    static Symbol *findFunctionSymbol(Symbol *symbolRoot, const std::string &identifierName);
 
     // Insert a new symbol (variable, function, or parameter)
     void insertSymbol(std::string name, std::string type, std::string dtype, int scope, bool isArray = false, int arrSize = 0, int lineNumber = -1);

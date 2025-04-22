@@ -98,6 +98,13 @@ build CMakeFiles/Creating_an_Interpreter.dir/AbstractSyntaxTree.cpp.obj: CXX_COM
   OBJECT_DIR = CMakeFiles\Creating_an_Interpreter.dir
   OBJECT_FILE_DIR = CMakeFiles\Creating_an_Interpreter.dir
 
+build CMakeFiles/Creating_an_Interpreter.dir/Interpreter.cpp.obj: CXX_COMPILER__Creating_an_Interpreter_unscanned_Debug C$:/Users/dylan/CLionProjects/Creating-an-Interpreter/Interpreter.cpp || cmake_object_order_depends_target_Creating_an_Interpreter
+  DEP_FILE = CMakeFiles\Creating_an_Interpreter.dir\Interpreter.cpp.obj.d
+  FLAGS = -g -std=gnu++14 -fdiagnostics-color=always
+  INCLUDES = -IC:/Users/dylan/CLionProjects/Creating-an-Interpreter/.
+  OBJECT_DIR = CMakeFiles\Creating_an_Interpreter.dir
+  OBJECT_FILE_DIR = CMakeFiles\Creating_an_Interpreter.dir
+
 
 # =============================================================================
 # Link build statements for EXECUTABLE target Creating_an_Interpreter
@@ -106,7 +113,7 @@ build CMakeFiles/Creating_an_Interpreter.dir/AbstractSyntaxTree.cpp.obj: CXX_COM
 #############################################
 # Link the executable Creating_an_Interpreter.exe
 
-build Creating_an_Interpreter.exe: CXX_EXECUTABLE_LINKER__Creating_an_Interpreter_Debug CMakeFiles/Creating_an_Interpreter.dir/main.cpp.obj CMakeFiles/Creating_an_Interpreter.dir/remove_comments.cpp.obj CMakeFiles/Creating_an_Interpreter.dir/Tokenizer.cpp.obj CMakeFiles/Creating_an_Interpreter.dir/Token.cpp.obj CMakeFiles/Creating_an_Interpreter.dir/RecursiveDescentParser.cpp.obj CMakeFiles/Creating_an_Interpreter.dir/SymbolTable.cpp.obj CMakeFiles/Creating_an_Interpreter.dir/AbstractSyntaxTree.cpp.obj
+build Creating_an_Interpreter.exe: CXX_EXECUTABLE_LINKER__Creating_an_Interpreter_Debug CMakeFiles/Creating_an_Interpreter.dir/main.cpp.obj CMakeFiles/Creating_an_Interpreter.dir/remove_comments.cpp.obj CMakeFiles/Creating_an_Interpreter.dir/Tokenizer.cpp.obj CMakeFiles/Creating_an_Interpreter.dir/Token.cpp.obj CMakeFiles/Creating_an_Interpreter.dir/RecursiveDescentParser.cpp.obj CMakeFiles/Creating_an_Interpreter.dir/SymbolTable.cpp.obj CMakeFiles/Creating_an_Interpreter.dir/AbstractSyntaxTree.cpp.obj CMakeFiles/Creating_an_Interpreter.dir/Interpreter.cpp.obj
   FLAGS = -g
   LINK_LIBRARIES = -lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32
   OBJECT_DIR = CMakeFiles\Creating_an_Interpreter.dir

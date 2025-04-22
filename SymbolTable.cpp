@@ -13,6 +13,43 @@ SymbolTable::SymbolTable(RecursiveDescentParser& parser) {
     globalScope = 0;
 }
 
+SymbolTable::Symbol* SymbolTable::findSymbol(Symbol* symbolRoot, const std::string& identifierName, int scope) {
+    Symbol* current = symbolRoot;
+
+    while (current) {
+        if (current->identifierName == identifierName) {
+            // Prefer the symbol in the exact scope
+            if (current->scope == scope) {
+                return current;
+            }
+        }
+        if (current->next != nullptr) {
+            current = current->next;
+        } else {
+            break;
+        }
+    }
+}
+
+SymbolTable::Symbol* SymbolTable::findFunctionSymbol(Symbol* symbolRoot, const std::string& identifierName) {
+    Symbol* current = symbolRoot;
+
+    while (current) {
+        if (current->identifierName == identifierName) {
+            // Prefer the symbol in the exact scope
+            if (current->identifierType == "function") {
+                return current;
+            }
+        }
+        if (current->next != nullptr) {
+            current = current->next;
+        } else {
+            break;
+        }
+    }
+}
+
+
 // Insert a new symbol (variable, function, or parameter)
 void SymbolTable::insertSymbol(std::string name, std::string type, std::string dtype, int scope, bool isArray, int arrSize, int lineNumber) {
     checkForDuplicate(name, scope, lineNumber);
@@ -47,6 +84,7 @@ void SymbolTable::checkForDuplicate(const string& identifierName, int scope, int
         temp = temp->next;
     }
 }
+
 
 
 // Insert function entry

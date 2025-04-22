@@ -20,6 +20,5 @@ procedure main (void)
   int sum;
 
   n = 100;
-  sum = sum_of_first_n_squares (n);
   printf ("sum of the squares of the first %d numbers = %d\n", n, sum);
 }

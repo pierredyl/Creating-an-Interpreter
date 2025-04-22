@@ -13,6 +13,8 @@
 #include "SymbolTable.h"
 using namespace std;
 
+class Interpreter;
+
 
 class AbstractSyntaxTree {
 private:
@@ -47,10 +49,11 @@ private:
     void insertNode(RecursiveDescentParser::CSTNode *currentCSTNode, string name, string type, string typeName);
     void printASTHelper(ASTNode *node, bool isLeftChild) const;
     void BuildASTHelper(RecursiveDescentParser::CSTNode* CSTRoot);
+    ASTNode* getRoot();
 
 public:
     friend class SymbolTable;
-    static const unordered_map<TokenType, string, int> typeMap;
+    friend class Interpreter;
 
     AbstractSyntaxTree(RecursiveDescentParser& CST);
 
