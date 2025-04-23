@@ -44,12 +44,23 @@ private:
     AbstractSyntaxTree::ASTNode *findFunctionNode(AbstractSyntaxTree::ASTNode *currentNode, string identifierName);
 
     void executeMain();
+
+    AbstractSyntaxTree::ASTNode* moveNodeDownOneStatement(AbstractSyntaxTree::ASTNode *node);
+
+    AbstractSyntaxTree::ASTNode *executeForLoop(AbstractSyntaxTree::ASTNode *node, int scope);
+
+    AbstractSyntaxTree::ASTNode *FindEndOfForLoopBody(AbstractSyntaxTree::ASTNode *node);
+
+    void executePrintf();
+
     int executeFunctionCall(string);
     bool isFunctionCall(AbstractSyntaxTree::ASTNode *node);
     void executeAssignment(AbstractSyntaxTree::ASTNode*, int);
-    AbstractSyntaxTree::ASTNode* executeIfStatement(AbstractSyntaxTree::ASTNode*);
+    AbstractSyntaxTree::ASTNode* executeIfStatement(AbstractSyntaxTree::ASTNode *, int scope);
 
-    bool isIfStatementTrue(AbstractSyntaxTree::ASTNode *node);
+    AbstractSyntaxTree::ASTNode *executeBlock(AbstractSyntaxTree::ASTNode *node, int scope);
+
+    bool isIfStatementTrue(AbstractSyntaxTree::ASTNode *node, int scope);
 };
 
 

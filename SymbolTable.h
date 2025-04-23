@@ -23,12 +23,14 @@ private:
         int scope;
         int symbolLineNumber;
         int currentValue;
+        string currentStringValue;
+        char currentCharValue;
         Symbol* next;
 
         // Constructor
         Symbol(string name, string type, string dtype, int scp, bool arr = false, int arrSize = 0, int lineNumber = -1)
             : identifierName(name), identifierType(type), dataType(dtype), scope(scp), isArray(arr),
-        arraySize(arrSize), symbolLineNumber(lineNumber), next(nullptr), currentValue(0) {}
+        arraySize(arrSize), symbolLineNumber(lineNumber), next(nullptr), currentValue(0), currentCharValue('\0') {}
 
     };
 

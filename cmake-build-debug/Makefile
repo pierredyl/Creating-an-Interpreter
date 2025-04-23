@@ -129,6 +129,54 @@ Creating_an_Interpreter/fast:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Creating_an_Interpreter.dir/build.make CMakeFiles/Creating_an_Interpreter.dir/build
 .PHONY : Creating_an_Interpreter/fast
 
+AbstractSyntaxTree.o: AbstractSyntaxTree.cpp.o
+.PHONY : AbstractSyntaxTree.o
+
+# target to build an object file
+AbstractSyntaxTree.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Creating_an_Interpreter.dir/build.make CMakeFiles/Creating_an_Interpreter.dir/AbstractSyntaxTree.cpp.o
+.PHONY : AbstractSyntaxTree.cpp.o
+
+AbstractSyntaxTree.i: AbstractSyntaxTree.cpp.i
+.PHONY : AbstractSyntaxTree.i
+
+# target to preprocess a source file
+AbstractSyntaxTree.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Creating_an_Interpreter.dir/build.make CMakeFiles/Creating_an_Interpreter.dir/AbstractSyntaxTree.cpp.i
+.PHONY : AbstractSyntaxTree.cpp.i
+
+AbstractSyntaxTree.s: AbstractSyntaxTree.cpp.s
+.PHONY : AbstractSyntaxTree.s
+
+# target to generate assembly for a file
+AbstractSyntaxTree.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Creating_an_Interpreter.dir/build.make CMakeFiles/Creating_an_Interpreter.dir/AbstractSyntaxTree.cpp.s
+.PHONY : AbstractSyntaxTree.cpp.s
+
+Interpreter.o: Interpreter.cpp.o
+.PHONY : Interpreter.o
+
+# target to build an object file
+Interpreter.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Creating_an_Interpreter.dir/build.make CMakeFiles/Creating_an_Interpreter.dir/Interpreter.cpp.o
+.PHONY : Interpreter.cpp.o
+
+Interpreter.i: Interpreter.cpp.i
+.PHONY : Interpreter.i
+
+# target to preprocess a source file
+Interpreter.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Creating_an_Interpreter.dir/build.make CMakeFiles/Creating_an_Interpreter.dir/Interpreter.cpp.i
+.PHONY : Interpreter.cpp.i
+
+Interpreter.s: Interpreter.cpp.s
+.PHONY : Interpreter.s
+
+# target to generate assembly for a file
+Interpreter.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Creating_an_Interpreter.dir/build.make CMakeFiles/Creating_an_Interpreter.dir/Interpreter.cpp.s
+.PHONY : Interpreter.cpp.s
+
 RecursiveDescentParser.o: RecursiveDescentParser.cpp.o
 .PHONY : RecursiveDescentParser.o
 
@@ -282,6 +330,12 @@ help:
 	@echo "... edit_cache"
 	@echo "... rebuild_cache"
 	@echo "... Creating_an_Interpreter"
+	@echo "... AbstractSyntaxTree.o"
+	@echo "... AbstractSyntaxTree.i"
+	@echo "... AbstractSyntaxTree.s"
+	@echo "... Interpreter.o"
+	@echo "... Interpreter.i"
+	@echo "... Interpreter.s"
 	@echo "... RecursiveDescentParser.o"
 	@echo "... RecursiveDescentParser.i"
 	@echo "... RecursiveDescentParser.s"

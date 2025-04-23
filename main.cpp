@@ -77,19 +77,19 @@ int main() {
     SymbolTable symbolTable(ConcreteSyntaxTree);
     symbolTable.buildSymbolTable();
     //cout << "\n\n";
-    //symbolTable.printTable();
+    symbolTable.printTable();
 
     //Abstract Syntax Tree
     AbstractSyntaxTree abstractSyntaxTree(ConcreteSyntaxTree, symbolTable);
     abstractSyntaxTree.buildAST();
     cout << "AST: " << endl;
     abstractSyntaxTree.printAST();
-    //abstractSyntaxTree.linkASTandSymbolTable();
+    abstractSyntaxTree.linkASTandSymbolTable();
     //abstractSyntaxTree.testLinking();
 
-    //cout << "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n";
-    //Interpreter program(abstractSyntaxTree, symbolTable);
-    //program.interpret();
+    cout << "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n";
+    Interpreter program(abstractSyntaxTree, symbolTable);
+    program.interpret();
 
     return 0;
 }
