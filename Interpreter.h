@@ -40,25 +40,29 @@ private:
 
 
     AbstractSyntaxTree::ASTNode* findMainProcedure(AbstractSyntaxTree::ASTNode*);
-
     AbstractSyntaxTree::ASTNode *findFunctionNode(AbstractSyntaxTree::ASTNode *currentNode, string identifierName);
+
+    AbstractSyntaxTree::ASTNode *findProcedureNode(AbstractSyntaxTree::ASTNode *currentNode, string name);
 
     void executeMain();
 
+    AbstractSyntaxTree::ASTNode *executeWhileLoop(AbstractSyntaxTree::ASTNode *node, int scope);
+
     AbstractSyntaxTree::ASTNode* moveNodeDownOneStatement(AbstractSyntaxTree::ASTNode *node);
-
     AbstractSyntaxTree::ASTNode *executeForLoop(AbstractSyntaxTree::ASTNode *node, int scope);
-
     AbstractSyntaxTree::ASTNode *FindEndOfForLoopBody(AbstractSyntaxTree::ASTNode *node);
 
-    void executePrintf();
-
+    AbstractSyntaxTree::ASTNode *executePrintf(AbstractSyntaxTree::ASTNode *node, int scope);
     int executeFunctionCall(string);
     bool isFunctionCall(AbstractSyntaxTree::ASTNode *node);
     void executeAssignment(AbstractSyntaxTree::ASTNode*, int);
-    AbstractSyntaxTree::ASTNode* executeIfStatement(AbstractSyntaxTree::ASTNode *, int scope);
 
+    AbstractSyntaxTree::ASTNode *movePastIfBlock(AbstractSyntaxTree::ASTNode *node, int scope);
+
+    AbstractSyntaxTree::ASTNode* executeIfStatement(AbstractSyntaxTree::ASTNode *, int scope);
     AbstractSyntaxTree::ASTNode *executeBlock(AbstractSyntaxTree::ASTNode *node, int scope);
+
+    AbstractSyntaxTree::ASTNode* executeProcedureCall(AbstractSyntaxTree::ASTNode *node, int scope);
 
     bool isIfStatementTrue(AbstractSyntaxTree::ASTNode *node, int scope);
 };

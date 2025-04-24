@@ -109,14 +109,11 @@ void Interpreter::executeAssignment(AbstractSyntaxTree::ASTNode* node, int scope
             string varName = evalStack.top();
             evalStack.pop();
 
-            cout << "currently working on " << rightValStr << " and " << varName << endl;
-
             if (isNumeric(rightValStr)) {
                 int rightVal = stoi(rightValStr);
                 SymbolTable::Symbol* variable = SymbolTable::findSymbol(symbolRoot, varName, scope);
                 if (variable != nullptr) {
                     variable->currentValue = rightVal;
-                    cout << "Assigned " << rightVal << " to " << varName << " in scope " << scope << endl;
                 } else {
                     cerr << "Error: Variable '" << varName << "' not declared." << endl;
                 }
@@ -124,7 +121,6 @@ void Interpreter::executeAssignment(AbstractSyntaxTree::ASTNode* node, int scope
                 SymbolTable::Symbol* variable = SymbolTable::findSymbol(symbolRoot, varName, scope);
                 if (variable != nullptr) {
                     variable->currentStringValue = rightValStr;
-                    cout << "Assigned " << rightValStr << " to " << varName << " in scope " << scope << endl;
                 } else {
                     cerr << "Error: Variable '" << varName << "' not declared." << endl;
                 }
@@ -169,7 +165,7 @@ void Interpreter::executeAssignment(AbstractSyntaxTree::ASTNode* node, int scope
 
             AbstractSyntaxTree::ASTNode* argNode = current->rightSibling->rightSibling;
             while (argNode && argNode->name != ")") {
-                if (containsNonDigit(argNode->name) && argNode->rightSibling->name != "[") {
+                if (containsNonDigit(argNode->name) && argNode->rightSibling->name != "[" && argNode->name != "]") {
                     auto* sym = SymbolTable::findSymbol(symbolRoot, argNode->name, scope);
                     functionSym = functionSym -> next;
                     functionSym->currentValue = sym->currentValue;
@@ -180,10 +176,8 @@ void Interpreter::executeAssignment(AbstractSyntaxTree::ASTNode* node, int scope
                     int varIndexValue = varInsideIndex->currentValue;
                     string varValue = var->currentStringValue;
                     char valAtIndexInVar = varValue[varIndexValue];
-                    cout << "current char being processed is: " << valAtIndexInVar << endl;
                     functionSym = functionSym -> next;
                     functionSym->currentCharValue = valAtIndexInVar;
-                    cout << "just assigned " << functionSym->identifierName << ": " << functionSym->currentCharValue << endl;
                 }
                 argNode = argNode->rightSibling;
             }
@@ -194,71 +188,280 @@ void Interpreter::executeAssignment(AbstractSyntaxTree::ASTNode* node, int scope
         } else {
             evalStack.push(token);
         }
-
         current = current->rightSibling;
     }
 }
 
+AbstractSyntaxTree::ASTNode* Interpreter::movePastIfBlock(AbstractSyntaxTree::ASTNode* node, int scope) {
+    AbstractSyntaxTree::ASTNode* current = node;
+    //move to if's begin block
+    current = moveNodeDownOneStatement(current);
+    int braceDepth = 0;
+    if (current->name == "BEGIN BLOCK") {
+        braceDepth++;
+        current = moveNodeDownOneStatement(current);
+    }
+
+    while (braceDepth > 0) {
+        if (current->name == "END BLOCK") {
+            braceDepth--;
+            if (braceDepth == 0) {
+                current = current->leftChild;
+                break;
+            }
+        } else if (current->name == "BEGIN BLOCK") {
+            braceDepth++;
+        } else {
+            current = moveNodeDownOneStatement(current);
+        }
+    }
+
+    return current;
+}
+
 
 AbstractSyntaxTree::ASTNode* Interpreter::executeIfStatement(AbstractSyntaxTree::ASTNode* node, int scope) {
-    if (isIfStatementTrue(node, scope)) {
-        node = moveNodeDownOneStatement(node);
+    AbstractSyntaxTree::ASTNode* current = node;
 
-        node = executeBlock(node, scope);
+    //Node passed in right past the if. For example, if -> counter -> 100 -> <=. Starts at counter
+
+    //Check if the if expression is true. if it is, I should evaluate the if statement.
+    if (isIfStatementTrue(current, scope)) {
+        //Moving one down should mark the begin block before the inside body of the if expression.
+        current = moveNodeDownOneStatement(current);
+
+        //executeBlock should be able to handle this.
+        current = executeBlock(current, scope);
+
+        //Execute block should return the node marking the next statement after the block has ended.
+        //If this is an if statement, we can re call executeIfStatement, since it is not nested.
+        if (current->name == "if") {
+            current = current->rightSibling;
+            current = executeIfStatement(current, scope);
+        }
+
+        //however, if it is an else, we're dealing with an if else expression. since the first if statement succeeded,
+        //everything under the else must be skipped.
+        if (current->name == "ELSE") {
+            //Move passed the else statement.
+            current = current->leftChild;
+            int braceDepth = 0;
+            if (current->name == "BEGIN BLOCK") {
+                braceDepth++;
+                current = moveNodeDownOneStatement(current);
+                while (braceDepth > 0) {
+                    if (current->name == "END BLOCK") {
+                        braceDepth--;
+                        if (braceDepth == 0) {
+                            current = current->leftChild;
+                            break;
+                        }
+                    } else if (current->name == "BEGIN BLOCK") {
+                        braceDepth++;
+                    }
+                    current = moveNodeDownOneStatement(current);
+                }
+            }
+        }
 
     } else {
-        node = moveNodeDownOneStatement(node);
+        //if statement is false. It should move passed the entire if block, and check if there is another if or else.
+        current = movePastIfBlock(current, scope);
+
+        if (current->name == "if") {
+            current = current->rightSibling;
+            current = executeIfStatement(current, scope);
+        }
+
+        if (current->name == "ELSE") {
+            //Move passed else
+            current = current->leftChild;
+            //begin executing the block
+            current = executeBlock(current, scope);
+        }
+    }
+
+    //if final statement isnt else, just return
+
+    return current;
+}
+
+    /*
+    AbstractSyntaxTree::ASTNode* current = node;
+    if (isIfStatementTrue(current, scope)) {
+        current = moveNodeDownOneStatement(current);
+        current = executeBlock(current, scope);
+
+    } else {
+        current = moveNodeDownOneStatement(current);
         int currentBraceDepth = 0;
 
-        if (node->name == "BEGIN BLOCK") {
+        if (current->name == "BEGIN BLOCK") {
             currentBraceDepth++;
-            node = node->leftChild;
+            current = current->leftChild;
 
             while (currentBraceDepth > 0) {
-                if (node->name == "END BLOCK") {
-                    currentBraceDepth--;
+                if (current->name == "BEGIN BLOCK") {
+                    currentBraceDepth++;
                 }
-                node = moveNodeDownOneStatement(node);
-            }
+                if (current->name == "END BLOCK") {
+                    currentBraceDepth--;
+                    if (currentBraceDepth == 0) {
+                        current = moveNodeDownOneStatement(current);
+                        break;
+                    }
+                }
 
-            if (node->name == "ELSE") {
-                //move ahead
-                node = moveNodeDownOneStatement(node);
-                executeBlock(node, scope);
+                if (current->name == "ELSE") {
+                    current = current->leftChild;
+
+                    int blockDepth = 0;
+                    if (current->name == "BEGIN BLOCK") {
+                        blockDepth++;
+
+                        while (blockDepth > 0) {
+                            if (current->name == "END BLOCK") {
+                                blockDepth--;
+                                if (blockDepth == 0) {
+                                    break;
+                                }
+                            } else if (current->name == "BEGIN BLOCK") {
+                                blockDepth++;
+                            } else if (current->name == "if") {
+                                current = current->rightSibling;
+                                current = executeIfStatement(current, scope);
+                            }
+                        }
+                    }
+                }
+                current = moveNodeDownOneStatement(current);
             }
         }
     }
-    return node;
+    return current;
 }
+*/
 
 AbstractSyntaxTree::ASTNode* Interpreter::executeBlock(AbstractSyntaxTree::ASTNode* node, int scope) {
+    AbstractSyntaxTree::ASTNode* current = node;
     int blockBraceDepth = 0;
-    if (node->name == "BEGIN BLOCK") {
+    if (current->name == "BEGIN BLOCK") {
         blockBraceDepth++;
-        node = node->leftChild;
+        current = current->leftChild;
     }
 
     while (blockBraceDepth > 0) {
-        if (node->name == "ASSIGNMENT") {
-            node = node->rightSibling;
-            executeAssignment(node, scope);
-        } else if (node->name == "END BLOCK") {
+        if (current->name == "ASSIGNMENT") {
+            current = current->rightSibling;
+            executeAssignment(current, scope);
+        } else if (current->name == "END BLOCK") {
             blockBraceDepth--;
             if (blockBraceDepth == 0) {
+                current = current->leftChild;
                 break;
             }
-        } else if (node->name == "BEGIN BLOCK") {
+        } else if (current->name == "BEGIN BLOCK") {
             blockBraceDepth++;
-        } else if (node->name == "if") {
+        } else if (current->name == "if") {
             //Move past if
-            node = node->rightSibling;
-            node = executeIfStatement(node, scope);
+            current = current->rightSibling;
+            current = executeIfStatement(current, scope);
+        } else if (current->name == "PRINTF") {
+            current = current->rightSibling;
+            current = executePrintf(current, scope);
+        } else if (current->name == "CALL") {
+            AbstractSyntaxTree::ASTNode* nodeTracker;
+
+            nodeTracker = current;
+
+            current = current->rightSibling;
+            current = executeProcedureCall(current, scope);
+
+            //return current to its proper place
+            current = nodeTracker;
         }
 
-        node = moveNodeDownOneStatement(node);
+        //bug fix for some methods that close end blocks. this will prevent an end block from being skipped.
+
+        if (current->name == "END BLOCK") {
+            blockBraceDepth--;
+        }
+
+        current = moveNodeDownOneStatement(current);
     }
-        return node;
+        return current;
 }
+
+AbstractSyntaxTree::ASTNode* Interpreter::executeProcedureCall(AbstractSyntaxTree::ASTNode* node, int scope) {
+    int procedureScope = -1;
+    AbstractSyntaxTree::ASTNode* current = node;
+
+    string procedureName = current->name;
+    //move past (
+    current = current->rightSibling->rightSibling;
+
+    string paramName = current->name;
+
+    AbstractSyntaxTree::ASTNode* procedureDeclNode = nullptr;
+
+    procedureDeclNode = findProcedureNode(ASTRoot, procedureName);
+    procedureScope = procedureDeclNode->symbolPointer->scope;
+
+    SymbolTable::Symbol* procParam = procedureDeclNode->symbolPointer->next;
+    auto* sym = SymbolTable::findSymbol(symbolRoot, paramName, scope);
+    procParam->currentValue = sym->currentValue;
+
+
+    procedureDeclNode = procedureDeclNode->leftChild;
+    current = procedureDeclNode;
+
+    //Begin procedure call
+    int braceDepth = 0;
+
+    if (current->name == "BEGIN BLOCK") {
+        braceDepth++;
+        current = current->leftChild;
+    }
+
+    while (braceDepth > 0) {
+        //cout << "current name: " << current->name << endl;
+        if (current->name == "END BLOCK") {
+            braceDepth--;
+            if (braceDepth == 0) {
+                break;
+            }
+        }
+
+        if (current->name == "BEGIN BLOCK") {
+            braceDepth++;
+        }
+
+        if (current->name == "if") {
+            current = current->rightSibling;
+            current = executeIfStatement(current, procedureScope);
+        }
+
+        if (current->name == "PRINTF") {
+            current = current->rightSibling;
+            current = executePrintf(current, procedureScope);
+        }
+
+        if (current->name == "ASSIGNMENT") {
+            current = current->rightSibling;
+            executeAssignment(current, procedureScope);
+        }
+
+        //bug fix for some methods that close end braces.
+        if (current->name == "END BLOCK") {
+            braceDepth--;
+        }
+
+        current = moveNodeDownOneStatement(current);
+    }
+
+    return current;
+}
+
 
 bool Interpreter::isIfStatementTrue(AbstractSyntaxTree::ASTNode* node, int scope) {
     stack<int> evalStack;
@@ -294,7 +497,7 @@ bool Interpreter::isIfStatementTrue(AbstractSyntaxTree::ASTNode* node, int scope
         if (token == "==" || token == "!=" ||
             token == "<"  || token == "<=" ||
             token == ">"  || token == ">=" ||
-            token == "&&")
+            token == "&&" || token == "%")
         {
             if (evalStack.size() < 2) {
                 cerr << "Error: not enough operands in if condition." << endl;
@@ -304,16 +507,20 @@ bool Interpreter::isIfStatementTrue(AbstractSyntaxTree::ASTNode* node, int scope
             int right = evalStack.top(); evalStack.pop();
             int left  = evalStack.top(); evalStack.pop();
 
+
+
             int cmpResult = 0;
             if      (token == "==") cmpResult = (left == right);
             else if (token == "!=") cmpResult = (left != right);
+            else if (token == "%")  cmpResult = (left % right);
             else if (token == "<")  cmpResult = (left <  right);
             else if (token == "<=") cmpResult = (left <= right);
             else if (token == ">")  cmpResult = (left >  right);
             else if (token == ">=") cmpResult = (left >= right);
             else if (token == "&&") cmpResult = (left && right);
-
+            //cout << "Evaluating: " << left << " " << token << " " << right << " = " << cmpResult << endl;
             evalStack.push(cmpResult);
+
         }
         else {
             int value = 0;
@@ -332,6 +539,7 @@ bool Interpreter::isIfStatementTrue(AbstractSyntaxTree::ASTNode* node, int scope
             } else {
                 value = stoi(token);
             }
+            //cout << "Pushing: " << value << endl;
             evalStack.push(value);
         }
 
@@ -343,7 +551,12 @@ bool Interpreter::isIfStatementTrue(AbstractSyntaxTree::ASTNode* node, int scope
         return false;
     }
 
-    return evalStack.top() != 0;
+    //cout << "EvalStack (top): " << evalStack.top() << endl;
+    if (evalStack.top() != 0) {
+        return true;
+    } else {
+        return false;
+    }
 }
 
 
@@ -426,12 +639,17 @@ void Interpreter::executeMain() {
 
         if (currentMainProcedureNode->name == "PRINTF") {
             currentMainProcedureNode = currentMainProcedureNode->rightSibling;
-            executePrintf();
+            executePrintf(currentMainProcedureNode, mainScope);
         }
 
         if (currentMainProcedureNode->name == "FOR EXPRESSION 1") {
             currentMainProcedureNode = currentMainProcedureNode->leftChild;
             currentMainProcedureNode = executeForLoop(currentMainProcedureNode, mainScope);
+        }
+
+        if (currentMainProcedureNode->name == "WHILE") {
+            currentMainProcedureNode = currentMainProcedureNode->rightSibling;
+            currentMainProcedureNode = executeWhileLoop(currentMainProcedureNode, mainScope);
         }
 
 
@@ -443,12 +661,33 @@ void Interpreter::executeMain() {
     }
 }
 
-AbstractSyntaxTree::ASTNode* Interpreter::moveNodeDownOneStatement(AbstractSyntaxTree::ASTNode* node) {
-    while (node != nullptr && node->rightSibling != nullptr) {
-        node = node->rightSibling;
+AbstractSyntaxTree::ASTNode* Interpreter::executeWhileLoop(AbstractSyntaxTree::ASTNode* node, int scope) {
+    AbstractSyntaxTree::ASTNode* current = node;
+    AbstractSyntaxTree::ASTNode* whileStatement = node;
+    AbstractSyntaxTree::ASTNode* startOfWhileLoop = node;
+
+    startOfWhileLoop = moveNodeDownOneStatement(startOfWhileLoop);
+
+    if (isIfStatementTrue(current,scope)) {
+        current = moveNodeDownOneStatement(current);
+        while (isIfStatementTrue(whileStatement,scope)) {
+            current = executeBlock(current, scope);
+            if (isIfStatementTrue(whileStatement, scope)) {
+                current = startOfWhileLoop;
+            }
+        }
     }
-    node = node -> leftChild;
-    return node;
+
+    return current;
+}
+
+AbstractSyntaxTree::ASTNode* Interpreter::moveNodeDownOneStatement(AbstractSyntaxTree::ASTNode* node) {
+    AbstractSyntaxTree::ASTNode* current = node;
+    while (current != nullptr && current->rightSibling != nullptr) {
+        current = current->rightSibling;
+    }
+    current = current -> leftChild;
+    return current;
 }
 
 AbstractSyntaxTree::ASTNode* Interpreter::executeForLoop(AbstractSyntaxTree::ASTNode* node, int scope) {
@@ -475,9 +714,9 @@ AbstractSyntaxTree::ASTNode* Interpreter::executeForLoop(AbstractSyntaxTree::AST
         //Begin executing after the for expression
         current = moveNodeDownOneStatement(current);
         AbstractSyntaxTree::ASTNode* loopBodyStart = current;
+
         while (isIfStatementTrue(conditionalNode, scope)) {
-            executeBlock(loopBodyStart, scope);
-            cout << "+1 iteration in for loop" << endl;
+            current = executeBlock(loopBodyStart, scope);
             executeAssignment(forAssignmentNode, scope);
         }
     }
@@ -507,9 +746,11 @@ AbstractSyntaxTree::ASTNode* Interpreter::FindEndOfForLoopBody(AbstractSyntaxTre
     return node;
 }
 
-void Interpreter::executePrintf() {
-    string printString = currentMainProcedureNode->name;
-    AbstractSyntaxTree::ASTNode* argNode = currentMainProcedureNode->rightSibling;
+AbstractSyntaxTree::ASTNode* Interpreter::executePrintf(AbstractSyntaxTree::ASTNode* node, int scope) {
+    AbstractSyntaxTree::ASTNode* current = node;
+
+    string printString = current->name;
+    AbstractSyntaxTree::ASTNode* argNode = current->rightSibling;
 
     // Store both ints and strings
     vector<string> formattedArgs;
@@ -520,10 +761,10 @@ void Interpreter::executePrintf() {
 
         // Try to determine if it's a variable or a literal
         if (containsNonDigit(token)) {
-            SymbolTable::Symbol* sym = SymbolTable::findSymbol(symbolRoot, token, mainScope);
+            SymbolTable::Symbol* sym = SymbolTable::findSymbol(symbolRoot, token, scope);
             if (!sym) {
                 cerr << "Error: Variable " << token << " not declared." << endl;
-                return;
+                return nullptr;
             }
 
             if (!sym->currentStringValue.empty()) {
@@ -563,8 +804,8 @@ void Interpreter::executePrintf() {
         printString.replace(newlinePos, 2, "\n");
     }
 
-    cout << "\n\n\n\n\n\n\n" << endl;
-    cout << printString << endl;
+    cout << printString;
+    return current;
 }
 
 
@@ -608,6 +849,33 @@ AbstractSyntaxTree::ASTNode* Interpreter::findFunctionNode(AbstractSyntaxTree::A
         string identifierName = currentNode->symbolPointer->identifierName;
 
         if (identifierName == name && identifierType == "function") {
+            return currentNode; // Found the main procedure, return it
+        }
+    }
+
+    // Recursively search in left child first
+    AbstractSyntaxTree::ASTNode* leftResult = findMainProcedure(currentNode->leftChild);
+    if (leftResult != nullptr) {
+        return leftResult; // If found in left child, return it
+    }
+
+    // If not found in left child, search in the right sibling
+    return findMainProcedure(currentNode->rightSibling);
+}
+
+AbstractSyntaxTree::ASTNode* Interpreter::findProcedureNode(AbstractSyntaxTree::ASTNode* currentNode, string name) {
+    if (currentNode == nullptr) {
+        return nullptr;
+    }
+
+    string nodeName = currentNode->name;
+
+    // Check if this node is a "DECLARATION" of a "main" procedure
+    if (nodeName == "DECLARATION") {
+        string identifierType = currentNode->symbolPointer->identifierType;
+        string identifierName = currentNode->symbolPointer->identifierName;
+
+        if (identifierName == name && identifierType == "procedure") {
             return currentNode; // Found the main procedure, return it
         }
     }

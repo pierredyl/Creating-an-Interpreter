@@ -15,19 +15,13 @@ SymbolTable::SymbolTable(RecursiveDescentParser& parser) {
 
 SymbolTable::Symbol* SymbolTable::findSymbol(Symbol* symbolRoot, const std::string& identifierName, int scope) {
     Symbol* current = symbolRoot;
-
     while (current) {
         if (current->identifierName == identifierName) {
-            // Prefer the symbol in the exact scope
             if (current->scope == scope) {
                 return current;
             }
         }
-        if (current->next != nullptr) {
-            current = current->next;
-        } else {
-            break;
-        }
+        current = current->next;
     }
 }
 

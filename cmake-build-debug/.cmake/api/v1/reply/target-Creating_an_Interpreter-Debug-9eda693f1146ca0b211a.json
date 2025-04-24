@@ -2,7 +2,10 @@
 	"artifacts" : 
 	[
 		{
-			"path" : "Creating_an_Interpreter"
+			"path" : "Creating_an_Interpreter.exe"
+		},
+		{
+			"path" : "Creating_an_Interpreter.pdb"
 		}
 	],
 	"backtrace" : 1,
@@ -42,14 +45,14 @@
 			"compileCommandFragments" : 
 			[
 				{
-					"fragment" : "-g -std=gnu++14 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX12.3.sdk -fcolor-diagnostics"
+					"fragment" : "-g -std=gnu++14 -fdiagnostics-color=always"
 				}
 			],
 			"includes" : 
 			[
 				{
 					"backtrace" : 2,
-					"path" : "/Users/dylanpierre/Desktop/Creating-an-Interpreter/."
+					"path" : "C:/Users/dylan/CLionProjects/Creating-an-Interpreter/."
 				}
 			],
 			"language" : "CXX",
@@ -86,12 +89,16 @@
 			{
 				"fragment" : "",
 				"role" : "flags"
+			},
+			{
+				"fragment" : "-lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32",
+				"role" : "libraries"
 			}
 		],
 		"language" : "CXX"
 	},
 	"name" : "Creating_an_Interpreter",
-	"nameOnDisk" : "Creating_an_Interpreter",
+	"nameOnDisk" : "Creating_an_Interpreter.exe",
 	"paths" : 
 	{
 		"build" : ".",

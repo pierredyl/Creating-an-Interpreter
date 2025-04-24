@@ -1,16 +1,4 @@
-/Applications/CLion.app/Contents/bin/cmake/mac/aarch64/bin/cmake -DCMAKE_BUILD_TYPE=Debug -G "Unix Makefiles" -S /Users/dylanpierre/Desktop/Creating-an-Interpreter -B /Users/dylanpierre/Desktop/Creating-an-Interpreter/cmake-build-debug
--- The C compiler identification is AppleClang 13.1.6.13160021
--- The CXX compiler identification is AppleClang 13.1.6.13160021
--- Detecting C compiler ABI info
--- Detecting C compiler ABI info - done
--- Check for working C compiler: /Library/Developer/CommandLineTools/usr/bin/cc - skipped
--- Detecting C compile features
--- Detecting C compile features - done
--- Detecting CXX compiler ABI info
--- Detecting CXX compiler ABI info - done
--- Check for working CXX compiler: /Library/Developer/CommandLineTools/usr/bin/c++ - skipped
--- Detecting CXX compile features
--- Detecting CXX compile features - done
--- Configuring done (0.7s)
+"C:\Program Files\JetBrains\CLion 2024.2.1\bin\cmake\win\x64\bin\cmake.exe" -DCMAKE_BUILD_TYPE=Debug "-DCMAKE_MAKE_PROGRAM=C:/Program Files/JetBrains/CLion 2024.2.1/bin/ninja/win/x64/ninja.exe" -G Ninja -S C:\Users\dylan\CLionProjects\Creating-an-Interpreter -B C:\Users\dylan\CLionProjects\Creating-an-Interpreter\cmake-build-debug
+-- Configuring done (0.2s)
 -- Generating done (0.0s)
--- Build files have been written to: /Users/dylanpierre/Desktop/Creating-an-Interpreter/cmake-build-debug
+-- Build files have been written to: C:/Users/dylan/CLionProjects/Creating-an-Interpreter/cmake-build-debug
