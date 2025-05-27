@@ -11,18 +11,5 @@ A lightweight interpreter for a simplified C-like language, written in C++. This
 - **Control Flow**: Supports `if` and `while` statements.
 - **Error Handling**: Provides basic error detection and reporting.
 
-## Project Structure
-├── ASTTestFiles/ # Test files for AST
-├── parserTestFiles/ # Test files for parser
-├── symbolTableTestFiles/ # Test files for symbol table
-├── AbstractSyntaxTree.cpp/.h # AST implementation
-├── Interpreter.cpp/.h # Interpreter logic
-├── RecursiveDescentParser.cpp/.h# Parser implementation
-├── SymbolTable.cpp/.h # Symbol table implementation
-├── Token.cpp/.h # Token definitions
-├── Tokenizer.cpp/.h # Lexer implementation
-├── main.cpp # Entry point
-├── CMakeLists.txt # Build configuration
-└── README.md # Project documentation
 
 
