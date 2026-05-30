@@ -1,0 +1,27 @@
+# Build output
+cmake-build-*/
+build/
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+Makefile
+
+# Compiled binaries
+*.o
+*.obj
+*.exe
+*.out
+interpreter
+Creating_an_Interpreter
+
+# IDE
+.idea/
+*.iml
+
+# Runtime output
+output.txt
+out.txt
+
+# OS
+.DS_Store
+Thumbs.db

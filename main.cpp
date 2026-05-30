@@ -57,6 +57,8 @@ int main() {
     // Tokenize
     Tokenizer tokenizer(code);
     vector<Token> tokens = tokenizer.tokenize();
+    for (int p = 0; p < 8; p++) tokens.push_back(tokens.empty() ? Token() : tokens.back());  // sentinel padding so a benign end-of-input over-read stays in bounds
+
 
     /*
     // Print out all tokens
